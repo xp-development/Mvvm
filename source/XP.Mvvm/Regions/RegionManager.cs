@@ -13,7 +13,10 @@ namespace XP.Mvvm.Regions
 
     private static void RegionChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-      _regions.Add((string)e.NewValue, new SingleContentRegion((ContentControl) d));
+      if (d is TabControl tabControl)
+        _regions.Add((string)e.NewValue, new TabRegion(tabControl));
+      else
+        _regions.Add((string)e.NewValue, new SingleContentRegion((ContentControl) d));
     }
 
     public static void SetRegion(DependencyObject element, string value)
