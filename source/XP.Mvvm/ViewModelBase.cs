@@ -4,6 +4,18 @@ namespace XP.Mvvm
 {
   public abstract class ViewModelBase : NotifyPropertyChangedBase, IViewInitialized, IViewLoaded, IViewUnloading, IViewUnloaded
   {
+    private string _displayName;
+
+    public string DisplayName
+    {
+      get => _displayName;
+      set
+      {
+        _displayName = value;
+        InvokePropertyChanged();
+      }
+    }
+
     public bool IsInitialized { get; private set; }
 
     public Task InitializedAsync(object parameter = null)
