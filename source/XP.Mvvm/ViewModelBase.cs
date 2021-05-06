@@ -1,10 +1,18 @@
 ﻿using System.Threading.Tasks;
+using System.Windows.Threading;
 
 namespace XP.Mvvm
 {
-  public abstract class ViewModelBase : NotifyPropertyChangedBase, IViewInitialized, IViewLoaded, IViewUnloading, IViewUnloaded
+  public abstract class ViewModelBase : NotifyPropertyChangedBase, IViewInitialized, IViewLoaded, IViewUnloading,
+    IViewUnloaded
   {
+    protected Dispatcher Dispatcher;
     private string _displayName;
+
+    protected ViewModelBase()
+    {
+      Dispatcher = Dispatcher.CurrentDispatcher;
+    }
 
     public string DisplayName
     {
@@ -29,14 +37,14 @@ namespace XP.Mvvm
       return OnLoadedAsync(parameter);
     }
 
-    public Task UnloadingAsync(ViewUnloadingEventArgs eventArgs)
-    {
-      return OnUnloadingAsync(eventArgs);
-    }
-
     public async Task UnloadedAsync()
     {
       await OnUnloadedAsync();
+    }
+
+    public Task UnloadingAsync(ViewUnloadingEventArgs eventArgs)
+    {
+      return OnUnloadingAsync(eventArgs);
     }
 
     protected virtual Task OnInitializedAsync(object parameter)

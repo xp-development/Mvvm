@@ -41,7 +41,7 @@ namespace XP.Mvvm.Regions
       else
       {
         var frameworkElement = (FrameworkElement) content;
-        _tabControl.Items.Add(frameworkElement);
+        _tabControl.SelectedIndex = _tabControl.Items.Add(frameworkElement);
         if (frameworkElement?.DataContext is IViewInitialized viewInitialized && !viewInitialized.IsInitialized)
           await viewInitialized.InitializedAsync(parameter);
 

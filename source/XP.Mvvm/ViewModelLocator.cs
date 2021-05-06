@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Windows;
+using XP.Mvvm.DependencyInjection;
 
 namespace XP.Mvvm
 {
@@ -9,13 +10,12 @@ namespace XP.Mvvm
       DependencyProperty.RegisterAttached("ViewModelType", typeof(Type), typeof(ViewModelLocator),
         new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.None, ViewModelTypeChanged));
 
-    public static Func<Type, object> ViewModelFunc;
+    public static IServiceLocator ViewModelServiceLocator;
 
     private static void ViewModelTypeChanged(DependencyObject dependencyObject,
       DependencyPropertyChangedEventArgs dependencyPropertyChangedEventArgs)
     {
-      ((FrameworkElement) dependencyObject).DataContext =
-        ViewModelFunc((Type) dependencyPropertyChangedEventArgs.NewValue);
+      ((FrameworkElement) dependencyObject).DataContext = ViewModelServiceLocator.Get((Type) dependencyPropertyChangedEventArgs.NewValue);
     }
 
     public static void SetViewModelType(DependencyObject dependencyObject, Type value)
