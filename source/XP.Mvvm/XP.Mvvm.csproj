@@ -1,18 +1,24 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>netstandard2.0;net472</TargetFrameworks>
+    <ProduceReferenceAssembly>true</ProduceReferenceAssembly>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>portable</DebugType>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Grace" Version="7.2.0" />
+    <PackageReference Include="Microcharts.Forms" Version="0.9.5.9" />
+    <PackageReference Include="Xamarin.Forms" Version="5.0.0.2012" />
+    <PackageReference Include="Xamarin.Essentials" Version="1.6.1" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="PresentationCore" />
-    <Reference Include="PresentationFramework" />
-    <Reference Include="System.Xaml" />
-    <Reference Include="WindowsBase" />
+    <Folder Include="Converters\" />
   </ItemGroup>
 
 </Project>

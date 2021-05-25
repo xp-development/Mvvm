@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
-using System.Windows;
-using System.Windows.Controls;
+using Xamarin.Forms;
 
 namespace XP.Mvvm.Regions
 {
@@ -8,23 +7,23 @@ namespace XP.Mvvm.Regions
   {
     private static readonly Dictionary<string, IRegion> _regions = new Dictionary<string, IRegion>();
 
-    public static readonly DependencyProperty RegionProperty = DependencyProperty.RegisterAttached(
-      "Region", typeof(string), typeof(RegionManager), new PropertyMetadata(default(string), RegionChangedCallback));
+    public static readonly BindableProperty RegionProperty = BindableProperty.CreateAttached(
+      "Region", typeof(string), typeof(RegionManager), default(string), propertyChanged: RegionChangedCallback);
 
-    private static void RegionChangedCallback(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    private static void RegionChangedCallback(BindableObject bindable, object oldvalue, object newvalue)
     {
-      if (d is TabControl tabControl)
-        _regions.Add((string)e.NewValue, new TabRegion(tabControl));
+      if (bindable is TabbedPage tabbedPage)
+        _regions.Add((string)newvalue, new TabRegion(tabbedPage));
       else
-        _regions.Add((string)e.NewValue, new SingleContentRegion((ContentControl) d));
+        _regions.Add((string)newvalue, new SingleContentRegion((ContentView) bindable));
     }
 
-    public static void SetRegion(DependencyObject element, string value)
+    public static void SetRegion(BindableObject element, string value)
     {
       element.SetValue(RegionProperty, value);
     }
 
-    public static string GetRegion(DependencyObject element)
+    public static string GetRegion(BindableObject element)
     {
       return (string) element.GetValue(RegionProperty);
     }

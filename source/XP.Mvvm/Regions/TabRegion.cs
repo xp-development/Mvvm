@@ -1,24 +1,23 @@
 ﻿using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
+using Xamarin.Forms;
 
 namespace XP.Mvvm.Regions
 {
   public class TabRegion : IRegion
   {
-    private readonly TabControl _tabControl;
+    private readonly TabbedPage _tabControl;
 
-    public TabRegion(TabControl tabControl)
+    public TabRegion(TabbedPage tabControl)
     {
       _tabControl = tabControl;
     }
 
     public async Task AttachAsync(object content, object parameter = null)
     {
-      if (_tabControl.SelectedContent != null)
+      if (_tabControl.SelectedItem != null)
       {
-        var frameworkElement = _tabControl.SelectedContent as FrameworkElement;
-        if (frameworkElement?.DataContext is IViewUnloading viewUnloading)
+        var frameworkElement = _tabControl.SelectedItem as BindableObject;
+        if (frameworkElement?.BindingContext is IViewUnloading viewUnloading)
         {
           var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
           await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
@@ -26,26 +25,26 @@ namespace XP.Mvvm.Regions
             return;
         }
 
-        if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
+        if (frameworkElement?.BindingContext is IViewUnloaded viewUnloaded)
           await viewUnloaded.UnloadedAsync();
       }
 
-      if (_tabControl.Items.Contains(content))
+      if (_tabControl.Children.Contains(content as Page))
       {
-        _tabControl.Items.MoveCurrentTo(content);
+        _tabControl.SelectedItem = content;
         
-        var frameworkElement = (FrameworkElement) content;
-        if (frameworkElement?.DataContext is IViewLoaded viewLoaded)
+        var frameworkElement = (BindableObject) content;
+        if (frameworkElement?.BindingContext is IViewLoaded viewLoaded)
           await viewLoaded.LoadedAsync(parameter);
       }
       else
       {
-        var frameworkElement = (FrameworkElement) content;
-        _tabControl.SelectedIndex = _tabControl.Items.Add(frameworkElement);
-        if (frameworkElement?.DataContext is IViewInitialized viewInitialized && !viewInitialized.IsInitialized)
+        var frameworkElement = (BindableObject) content;
+        _tabControl.Children.Add((Page) frameworkElement);
+        if (frameworkElement?.BindingContext is IViewInitialized viewInitialized && !viewInitialized.IsInitialized)
           await viewInitialized.InitializedAsync(parameter);
 
-        if (frameworkElement?.DataContext is IViewLoaded viewLoaded)
+        if (frameworkElement?.BindingContext is IViewLoaded viewLoaded)
           await viewLoaded.LoadedAsync(parameter);
       }
     }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿#if NET472
+using Microsoft.Win32;
 
 namespace XP.Mvvm
 {
@@ -19,3 +20,4 @@ namespace XP.Mvvm
     }
   }
 }
+#endif

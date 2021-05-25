@@ -1,17 +1,17 @@
-﻿using System.Threading.Tasks;
-using System.Windows.Threading;
+﻿using System.Threading;
+using System.Threading.Tasks;
 
 namespace XP.Mvvm
 {
   public abstract class ViewModelBase : NotifyPropertyChangedBase, IViewInitialized, IViewLoaded, IViewUnloading,
     IViewUnloaded
   {
-    protected Dispatcher Dispatcher;
     private string _displayName;
+    protected SynchronizationContext SynchronizationContext;
 
     protected ViewModelBase()
     {
-      Dispatcher = Dispatcher.CurrentDispatcher;
+      SynchronizationContext = SynchronizationContext.Current;
     }
 
     public string DisplayName
