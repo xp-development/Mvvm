@@ -36,5 +36,10 @@ namespace XP.Mvvm.Regions
       if (frameworkElement?.DataContext is IViewLoaded viewLoaded)
         await viewLoaded.LoadedAsync(parameter);
     }
+
+    public Task CloseCurrent()
+    {
+      return AttachAsync(new ContentControl());
+    }
   }
 }

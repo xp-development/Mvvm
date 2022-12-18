@@ -15,20 +15,8 @@ namespace XP.Mvvm.Regions
 
     public async Task AttachAsync(object content, object parameter = null)
     {
-      if (_tabControl.SelectedContent != null)
-      {
-        var frameworkElement = _tabControl.SelectedContent as FrameworkElement;
-        if (frameworkElement?.DataContext is IViewUnloading viewUnloading)
-        {
-          var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
-          await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
-          if (viewUnloadingEventArgs.Cancel)
-            return;
-        }
-
-        if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
-          await viewUnloaded.UnloadedAsync();
-      }
+      if (await UnloadSelectedContent())
+        return;
 
       if (_tabControl.Items.Contains(content))
       {
@@ -48,6 +36,34 @@ namespace XP.Mvvm.Regions
         if (frameworkElement?.DataContext is IViewLoaded viewLoaded)
           await viewLoaded.LoadedAsync(parameter);
       }
+    }
+
+    private async Task<bool> UnloadSelectedContent()
+    {
+      if (_tabControl.SelectedContent != null)
+      {
+        var frameworkElement = _tabControl.SelectedContent as FrameworkElement;
+        if (frameworkElement?.DataContext is IViewUnloading viewUnloading)
+        {
+          var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
+          await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
+          if (viewUnloadingEventArgs.Cancel)
+            return true;
+        }
+
+        if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
+          await viewUnloaded.UnloadedAsync();
+      }
+
+      return false;
+    }
+
+    public Task CloseCurrent()
+    {
+      var unloadSelectedContent = UnloadSelectedContent();
+      var tabControlSelectedContent = _tabControl.SelectedContent;
+      _tabControl.Items.Remove(tabControlSelectedContent);
+      return unloadSelectedContent;
     }
   }
 }
