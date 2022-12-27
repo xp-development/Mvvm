@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
-using System.Windows.Threading;
 
 namespace XP.Mvvm
 {
-  public abstract class ViewModelBase : NotifyPropertyChangedBase, IViewInitialized, IViewLoaded, IViewUnloading,
+  public abstract class ViewModelBase : NotifyPropertyChangedBase, IViewInitialized, IViewDeinitialized, IViewLoaded, IViewUnloading,
     IViewUnloaded
   {
     protected Dispatcher Dispatcher;
@@ -32,6 +31,11 @@ namespace XP.Mvvm
       return OnInitializedAsync(parameter);
     }
 
+    public Task DeinitializedAsync()
+    {
+      return OnDeinitializedAsync();
+    }
+
     public Task LoadedAsync(object parameter)
     {
       return OnLoadedAsync(parameter);
@@ -48,6 +52,11 @@ namespace XP.Mvvm
     }
 
     protected virtual Task OnInitializedAsync(object parameter)
+    {
+      return Task.CompletedTask;
+    }
+
+    protected virtual Task OnDeinitializedAsync()
     {
       return Task.CompletedTask;
     }

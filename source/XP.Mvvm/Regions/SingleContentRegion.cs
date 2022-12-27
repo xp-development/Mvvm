@@ -1,7 +1,6 @@
-﻿using System;
+﻿using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace XP.Mvvm.Regions
 {
@@ -28,18 +27,28 @@ namespace XP.Mvvm.Regions
       if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
         await viewUnloaded.UnloadedAsync();
 
+      if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
+        await viewDeinitialized.DeinitializedAsync();
+
       _contentControl.Content = (FrameworkElement) content;
       frameworkElement = (FrameworkElement) _contentControl.Content;
-      if (frameworkElement?.DataContext is IViewInitialized viewInitialized && !viewInitialized.IsInitialized)
+      if (frameworkElement?.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
         await viewInitialized.InitializedAsync(parameter);
 
       if (frameworkElement?.DataContext is IViewLoaded viewLoaded)
         await viewLoaded.LoadedAsync(parameter);
     }
 
-    public Task CloseCurrent()
+    public Task CloseAsync(object content)
     {
       return AttachAsync(new ContentControl());
     }
+
+    public Task CloseCurrentAsync()
+    {
+      return AttachAsync(new ContentControl());
+    }
+
+    public object Current => _contentControl;
   }
 }

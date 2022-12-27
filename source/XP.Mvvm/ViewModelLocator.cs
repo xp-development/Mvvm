@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Windows;
+using Microsoft.UI.Xaml;
 using XP.Mvvm.DependencyInjection;
 
 namespace XP.Mvvm
@@ -7,8 +7,7 @@ namespace XP.Mvvm
   public class ViewModelLocator
   {
     public static readonly DependencyProperty ViewModelTypeProperty =
-      DependencyProperty.RegisterAttached("ViewModelType", typeof(Type), typeof(ViewModelLocator),
-        new FrameworkPropertyMetadata(null, FrameworkPropertyMetadataOptions.None, ViewModelTypeChanged));
+      DependencyProperty.RegisterAttached("ViewModelType", typeof(Type), typeof(ViewModelLocator), new PropertyMetadata(null, ViewModelTypeChanged));
 
     public static IServiceLocator ViewModelServiceLocator;
 
