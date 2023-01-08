@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Threading.Tasks;
@@ -16,56 +17,76 @@ namespace XP.Mvvm.Regions
     public TabRegion(TabView tabControl)
     {
       _tabControl = tabControl;
+      _tabControl.SelectionChanged += TabControlSelectionChanged;
+    }
+
+    private bool _suppressChanging;
+
+    private async void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+      if (_suppressChanging)
+        return;
+
+      var reselectItems = new List<object>();
+      foreach (var removedItem in e.RemovedItems)
+      {
+        if (await UnloadContent(removedItem))
+          reselectItems.Add(removedItem);
+      }
+
+      foreach (var reselectItem in reselectItems)
+      {
+        _suppressChanging = true;
+        _tabControl.SelectedItem = reselectItem;
+        _suppressChanging = false;
+      }
+
+      foreach (var addedItem in e.AddedItems)
+      {
+        var frameworkElement = (FrameworkElement)((TabViewItem)addedItem).Content;
+        await ViewLoadedAsync(frameworkElement);
+      }
+    }
+
+    private async Task ViewLoadedAsync(FrameworkElement frameworkElement)
+    {
+      if (frameworkElement.DataContext is IViewLoaded viewLoaded)
+      {
+        await viewLoaded.LoadedAsync(_attachParameter);
+        _log.Debug($"ViewLoaded {frameworkElement.GetType()}");
+        _attachParameter = null;
+      }
     }
 
     public async Task AttachAsync(object content, object parameter = null)
     {
       _log.Debug($"Attach {content.GetType()}");
-
-      if (await UnloadContent(_tabControl.SelectedItem))
-        return;
-
+      
       var firstOrDefault = _tabControl.TabItems.Cast<TabViewItem>().FirstOrDefault(x => x.Content == content);
-      if (firstOrDefault != null)
-      {
-        _tabControl.SelectedItem = firstOrDefault;
-        var frameworkElement = (FrameworkElement) content;
-        if (frameworkElement.DataContext is IViewLoaded viewLoaded)
-        {
-          await viewLoaded.LoadedAsync(parameter);
-          _log.Debug($"ViewLoaded {frameworkElement.GetType()}");
-        }
-      }
-      else
+      if (firstOrDefault == null)
       {
         var frameworkElement = (FrameworkElement)content;
-        var tabViewItem = new TabViewItem{ Content = content, Header = (ViewModelBase)frameworkElement.DataContext };
-        _tabControl.TabItems.Add(tabViewItem);
-        _tabControl.SelectedItem = tabViewItem;
-
+        var tabViewItem = new TabViewItem { Content = content, Header = (ViewModelBase)frameworkElement.DataContext };
+        
         if (frameworkElement.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
         {
           await viewInitialized.InitializedAsync(parameter);
           _log.Debug($"ViewInitialized {frameworkElement.GetType()}");
         }
 
-        if (frameworkElement.DataContext is IViewLoaded)
-        {
-          _attachParameter = parameter;
-          frameworkElement.Loaded += ViewLoaded;
-        }
-      }
-    }
+        // _suppressChanging = true;
+        _attachParameter = parameter;
+        _tabControl.TabItems.Add(tabViewItem);
+        _tabControl.SelectedItem = tabViewItem;
 
-    private async void ViewLoaded(object sender, RoutedEventArgs e)
-    {
-      var attachParameter = _attachParameter;
-      var frameworkElement = (FrameworkElement)sender;
-      frameworkElement.Loaded -= ViewLoaded;
-      var viewModel = (IViewLoaded)frameworkElement.DataContext;
-      await viewModel.LoadedAsync(attachParameter);
-      _log.Debug($"ViewLoaded {frameworkElement.GetType()}");
-      _attachParameter = null;
+        // if (frameworkElement.DataContext is IViewLoaded)
+        // {
+        //   _attachParameter = parameter;
+        //   await ViewLoadedAsync(frameworkElement);
+        // }
+
+        // _suppressChanging = false;
+      }
     }
 
     private async Task<bool> UnloadContent(object content)
@@ -101,11 +122,23 @@ namespace XP.Mvvm.Regions
       return CloseAsync(_tabControl.SelectedItem);
     }
 
+    public async Task ReplaceCurrentWithAsync(object content, object parameter = null)
+    {
+      _log.Debug($"Replace {_tabControl.SelectedItem.GetType()} with {content.GetType()}");
+
+      _suppressChanging = true;
+      await CloseAsync(_tabControl.SelectedItem);
+      _suppressChanging = false;
+      await AttachAsync(content, parameter);
+    }
+
     public async Task CloseAsync(object content)
     {
       _log.Debug($"Close {content.GetType()}");
 
-      await UnloadContent(content);
+      if (await UnloadContent(content))
+        return;
+
       var tabViewItem = content as TabViewItem;
       var frameworkElement = tabViewItem?.Content as FrameworkElement;
       if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)

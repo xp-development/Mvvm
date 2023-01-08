@@ -70,6 +70,12 @@ namespace XP.Mvvm.Regions
       return CloseAsync(_contentControl);
     }
 
+    public Task ReplaceCurrentWithAsync(object content, object parameter = null)
+    {
+      _log.Debug($"Replace {_contentControl.GetType()} with {content.GetType()}");
+      return AttachAsync(content, parameter);
+    }
+
     public object Current => _contentControl;
   }
 }

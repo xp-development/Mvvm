@@ -41,9 +41,9 @@ namespace XP.Mvvm
       return OnLoadedAsync(parameter);
     }
 
-    public async Task UnloadedAsync()
+    public Task UnloadedAsync()
     {
-      await OnUnloadedAsync();
+      return OnUnloadedAsync();
     }
 
     public Task UnloadingAsync(ViewUnloadingEventArgs eventArgs)
