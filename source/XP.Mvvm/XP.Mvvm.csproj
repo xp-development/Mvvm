@@ -6,6 +6,7 @@
     <UseWinUI>true</UseWinUI>
     <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
     <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    <Platforms>x64</Platforms>
   </PropertyGroup>
 
   <ItemGroup>

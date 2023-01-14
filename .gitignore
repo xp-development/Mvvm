@@ -2,3 +2,4 @@ source/**/obj/**
 source/XP.Mvvm/.vs/**
 source/.vs/**
 /source/**/bin/Debug/**
+source/XP.Mvvm/bin/x64/**
