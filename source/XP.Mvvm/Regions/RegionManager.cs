@@ -15,6 +15,8 @@ namespace XP.Mvvm.Regions
     {
       if (d is TabView tabControl)
         _regions[(string)e.NewValue] = new TabRegion(tabControl);
+      else if (d is ItemsControl itemsControl)
+        _regions[(string)e.NewValue] = new ItemsControlRegion(itemsControl);
       else
         _regions[(string)e.NewValue] = new SingleContentRegion((ContentControl) d);
     }

@@ -71,6 +71,12 @@ namespace XP.Mvvm.DependencyInjection
       _container.Configure(c => c.ExportInstance(obj).As<TInterface>());
     }
 
+    public void RegisterTransientObject<TInterface>(TInterface obj, string key)
+    {
+      _log.Debug($"RegisterTransientObject export {obj.GetType()} as {typeof(TInterface)} with key {key}");
+      _container.Configure(c => c.ExportInstance(obj).AsKeyed<TInterface>(key));
+    }
+
     public void RegisterTransientObject<TInterface, TObject>()
       where TObject : TInterface
     {

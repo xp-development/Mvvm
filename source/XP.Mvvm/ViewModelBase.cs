@@ -2,16 +2,10 @@
 
 namespace XP.Mvvm
 {
-  public abstract class ViewModelBase : NotifyPropertyChangedBase, IViewInitialized, IViewDeinitialized, IViewLoaded, IViewUnloading,
+  public abstract class ViewModelBase : NotifyPropertyChangedBase, IViewInitialized, IViewLoaded, IViewUnloading, IViewDeinitialized,
     IViewUnloaded
   {
-    protected Dispatcher Dispatcher;
     private string _displayName;
-
-    protected ViewModelBase()
-    {
-      Dispatcher = Dispatcher.CurrentDispatcher;
-    }
 
     public string DisplayName
     {
@@ -24,6 +18,7 @@ namespace XP.Mvvm
     }
 
     public bool IsInitialized { get; private set; }
+    public bool IsLoaded { get; private set; }
 
     public Task InitializedAsync(object parameter = null)
     {
@@ -38,11 +33,13 @@ namespace XP.Mvvm
 
     public Task LoadedAsync(object parameter)
     {
+      IsLoaded = true;
       return OnLoadedAsync(parameter);
     }
 
     public Task UnloadedAsync()
     {
+      IsLoaded = false;
       return OnUnloadedAsync();
     }
 

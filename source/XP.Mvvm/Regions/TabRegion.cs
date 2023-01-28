@@ -1,17 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System.Threading.Tasks;
+using Windows.Foundation.Collections;
 using log4net;
+using Microsoft.UI.Xaml.Media;
 
 namespace XP.Mvvm.Regions
 {
   public class TabRegion : IRegion
   {
     private readonly TabView _tabControl;
-    private object _attachParameter;
-
+    private bool _suppressChanging;
     private static readonly ILog _log = LogManager.GetLogger(typeof(TabRegion));
 
     public TabRegion(TabView tabControl)
@@ -20,8 +22,22 @@ namespace XP.Mvvm.Regions
       _tabControl.SelectionChanged += TabControlSelectionChanged;
     }
 
-    private bool _suppressChanging;
+    public Task AttachAsync(object content, object parameter = null)
+    {
+      _log.Debug($"Attach {content.GetType()}");
+      
+      var firstOrDefault = _tabControl.TabItems.Cast<TabViewItem>().FirstOrDefault(x => x.Content == content);
+      if (firstOrDefault != null)
+        return Task.CompletedTask;
+      
+      var frameworkElement = (FrameworkElement)content;
+      var tabViewItem = new TabViewItem { Content = content, Header = (ViewModelBase)frameworkElement.DataContext, Tag = parameter };
 
+      _tabControl.TabItems.Add(tabViewItem);
+      _tabControl.SelectedItem = tabViewItem;
+      return Task.CompletedTask;
+    }
+    
     private async void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
       if (_suppressChanging)
@@ -43,49 +59,32 @@ namespace XP.Mvvm.Regions
 
       foreach (var addedItem in e.AddedItems)
       {
-        var frameworkElement = (FrameworkElement)((TabViewItem)addedItem).Content;
-        await ViewLoadedAsync(frameworkElement);
+        var tabViewItem = (TabViewItem)addedItem;
+        var frameworkElement = (FrameworkElement)tabViewItem.Content;
+        await LoadContentAsync(frameworkElement, tabViewItem.Tag);
       }
     }
 
-    private async Task ViewLoadedAsync(FrameworkElement frameworkElement)
+    private async Task LoadContentAsync(FrameworkElement frameworkElement, object parameter)
     {
-      if (frameworkElement.DataContext is IViewLoaded viewLoaded)
+      var controlsToLoad = new List<FrameworkElement> { frameworkElement };
+      controlsToLoad.AddRange(FindVisualChilds(frameworkElement, x => x.GetValue(RegionManager.RegionProperty) != null));
+      foreach (var element in controlsToLoad)
       {
-        await viewLoaded.LoadedAsync(_attachParameter);
-        _log.Debug($"ViewLoaded {frameworkElement.GetType()}");
-        _attachParameter = null;
-      }
-    }
-
-    public async Task AttachAsync(object content, object parameter = null)
-    {
-      _log.Debug($"Attach {content.GetType()}");
-      
-      var firstOrDefault = _tabControl.TabItems.Cast<TabViewItem>().FirstOrDefault(x => x.Content == content);
-      if (firstOrDefault == null)
-      {
-        var frameworkElement = (FrameworkElement)content;
-        var tabViewItem = new TabViewItem { Content = content, Header = (ViewModelBase)frameworkElement.DataContext };
+        if (element.DataContext is not IViewInitialized { IsInitialized: false } viewInitialized)
+          continue;
         
-        if (frameworkElement.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
-        {
-          await viewInitialized.InitializedAsync(parameter);
-          _log.Debug($"ViewInitialized {frameworkElement.GetType()}");
-        }
+        await viewInitialized.InitializedAsync(parameter);
+        _log.Debug($"ViewInitialized {element.GetType()}");
+      }
 
-        // _suppressChanging = true;
-        _attachParameter = parameter;
-        _tabControl.TabItems.Add(tabViewItem);
-        _tabControl.SelectedItem = tabViewItem;
-
-        // if (frameworkElement.DataContext is IViewLoaded)
-        // {
-        //   _attachParameter = parameter;
-        //   await ViewLoadedAsync(frameworkElement);
-        // }
-
-        // _suppressChanging = false;
+      foreach (var element in controlsToLoad)
+      {
+        if (element.DataContext is not IViewLoaded viewLoaded)
+          continue;
+        
+        await viewLoaded.LoadedAsync(parameter);
+        _log.Debug($"ViewLoaded {element.GetType()}");
       }
     }
 
@@ -96,22 +95,31 @@ namespace XP.Mvvm.Regions
 
       var tabViewItem = content as TabViewItem;
       var tabContent = tabViewItem?.Content as FrameworkElement;
-      if (tabContent?.DataContext is IViewUnloading viewUnloading)
+      var controlsToUnload = new List<FrameworkElement> { tabContent };
+      controlsToUnload.AddRange(FindVisualChilds(tabContent, x => x.GetValue(RegionManager.RegionProperty) != null));
+      
+      var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
+      foreach (var frameworkElement in controlsToUnload)
       {
-        var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
+        if (frameworkElement?.DataContext is not IViewUnloading viewUnloading)
+          continue;
+        
         await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
-        _log.Debug($"Unloading {tabContent.GetType()}");
+        _log.Debug($"Unloading {frameworkElement.GetType()}");
         if (viewUnloadingEventArgs.Cancel)
         {
-          _log.Debug($"Unloading {tabContent.GetType()} cancelled.");
+          _log.Debug($"Unloading {frameworkElement.GetType()} cancelled.");
           return true;
         }
       }
 
-      if (tabContent?.DataContext is IViewUnloaded viewUnloaded)
+      foreach (var frameworkElement in controlsToUnload)
       {
-        await viewUnloaded.UnloadedAsync();
-        _log.Debug($"Unloaded {tabContent.GetType()}");
+        if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
+        {
+          await viewUnloaded.UnloadedAsync();
+          _log.Debug($"Unloaded {tabContent.GetType()}");
+        }
       }
 
       return false;
@@ -152,5 +160,37 @@ namespace XP.Mvvm.Regions
     }
 
     public object Current => (_tabControl.SelectedItem as TabViewItem)?.Content;
+    
+    public static IEnumerable<FrameworkElement> FindVisualChilds(FrameworkElement dependencyObject, Func<FrameworkElement, bool> condition)
+    {
+      if (dependencyObject == null)
+        yield return (FrameworkElement)Enumerable.Empty<FrameworkElement>();
+      
+      for (var i = 0; i < VisualTreeHelper.GetChildrenCount(dependencyObject); i++)
+      {
+        var child = VisualTreeHelper.GetChild(dependencyObject, i) as FrameworkElement;
+        if (child == null)
+          continue;
+
+        if (child is FrameworkElement visualChild && condition(visualChild))
+        {
+          if (visualChild is ItemsControl itemsControl)
+          {
+            foreach (var item in itemsControl.Items)
+              yield return (FrameworkElement)item;
+          }
+          else if (visualChild is TabView tabView)
+          {
+            foreach (var tabItem in tabView.TabItems.Cast<TabViewItem>())
+              yield return (FrameworkElement)tabItem.Content;              
+          }
+          else if(visualChild is ContentControl)
+            yield return visualChild;
+        }
+        
+        foreach (var childOfChild in FindVisualChilds(child, condition))
+          yield return childOfChild;
+      }
+    }
   }
 }

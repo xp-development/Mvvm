@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Threading;
 using System.Threading.Tasks;
-using Windows.UI.Core;
 using Microsoft.UI.Dispatching;
 
 namespace XP.Mvvm
