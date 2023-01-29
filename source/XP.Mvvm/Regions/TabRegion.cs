@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using log4net;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Threading.Tasks;
-using Windows.Foundation.Collections;
-using log4net;
 using Microsoft.UI.Xaml.Media;
 
 namespace XP.Mvvm.Regions
@@ -15,6 +14,7 @@ namespace XP.Mvvm.Regions
     private readonly TabView _tabControl;
     private bool _suppressChanging;
     private static readonly ILog _log = LogManager.GetLogger(typeof(TabRegion));
+    private TaskCompletionSource _taskCompletionSource;
 
     public TabRegion(TabView tabControl)
     {
@@ -22,20 +22,21 @@ namespace XP.Mvvm.Regions
       _tabControl.SelectionChanged += TabControlSelectionChanged;
     }
 
-    public Task AttachAsync(object content, object parameter = null)
+    public async Task AttachAsync(object content, object parameter = null)
     {
       _log.Debug($"Attach {content.GetType()}");
       
       var firstOrDefault = _tabControl.TabItems.Cast<TabViewItem>().FirstOrDefault(x => x.Content == content);
       if (firstOrDefault != null)
-        return Task.CompletedTask;
+        return;
       
       var frameworkElement = (FrameworkElement)content;
+      _taskCompletionSource = new TaskCompletionSource();
       var tabViewItem = new TabViewItem { Content = content, Header = (ViewModelBase)frameworkElement.DataContext, Tag = parameter };
-
       _tabControl.TabItems.Add(tabViewItem);
       _tabControl.SelectedItem = tabViewItem;
-      return Task.CompletedTask;
+      await _taskCompletionSource.Task;
+      _taskCompletionSource = null;
     }
     
     private async void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -63,6 +64,8 @@ namespace XP.Mvvm.Regions
         var frameworkElement = (FrameworkElement)tabViewItem.Content;
         await LoadContentAsync(frameworkElement, tabViewItem.Tag);
       }
+      
+      _taskCompletionSource?.SetResult();
     }
 
     private async Task LoadContentAsync(FrameworkElement frameworkElement, object parameter)
@@ -160,8 +163,8 @@ namespace XP.Mvvm.Regions
     }
 
     public object Current => (_tabControl.SelectedItem as TabViewItem)?.Content;
-    
-    public static IEnumerable<FrameworkElement> FindVisualChilds(FrameworkElement dependencyObject, Func<FrameworkElement, bool> condition)
+
+    private static IEnumerable<FrameworkElement> FindVisualChilds(FrameworkElement dependencyObject, Func<FrameworkElement, bool> condition)
     {
       if (dependencyObject == null)
         yield return (FrameworkElement)Enumerable.Empty<FrameworkElement>();
