@@ -8,6 +8,8 @@ namespace XP.Mvvm.Converters
 {
   public class BoolToVisibilityConverter : MarkupExtension, IValueConverter
   {
+    public bool VisibleValue { get; set; } = true;
+    
     protected override object ProvideValue(IXamlServiceProvider serviceProvider)
     {
       return this;
@@ -17,7 +19,7 @@ namespace XP.Mvvm.Converters
     {
       if (value is bool boolValue)
       {
-        return boolValue ? Visibility.Visible : Visibility.Collapsed;
+        return boolValue == VisibleValue ? Visibility.Visible : Visibility.Collapsed;
       }
 
       return Visibility.Visible;
