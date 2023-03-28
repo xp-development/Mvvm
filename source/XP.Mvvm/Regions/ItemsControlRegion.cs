@@ -28,6 +28,12 @@ public class ItemsControlRegion : IRegion
             _log.Debug($"ViewInitialized {frameworkElement.GetType()}");
         }
         
+        if (frameworkElement.DataContext is IViewLoading viewLoading)
+        {
+            await viewLoading.LoadingAsync(parameter);
+            _log.Debug($"ViewLoading {frameworkElement.GetType()}");
+        }
+        
         if (frameworkElement.DataContext is IViewLoaded viewLoaded)
         {
             await viewLoaded.LoadedAsync(parameter);

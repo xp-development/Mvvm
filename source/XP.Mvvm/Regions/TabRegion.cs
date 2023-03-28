@@ -83,6 +83,15 @@ namespace XP.Mvvm.Regions
 
       foreach (var element in controlsToLoad)
       {
+        if (element.DataContext is not IViewLoading viewLoading)
+          continue;
+        
+        await viewLoading.LoadingAsync(parameter);
+        _log.Debug($"ViewLoading {element.GetType()}");
+      }
+
+      foreach (var element in controlsToLoad)
+      {
         if (element.DataContext is not IViewLoaded viewLoaded)
           continue;
         
