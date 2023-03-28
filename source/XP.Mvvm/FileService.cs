@@ -1,16 +1,13 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Xml.Linq;
 using Windows.Storage.Pickers;
 
 namespace XP.Mvvm
 {
   public class FileService : IFileService
   {
-    public string OpenFile()
+    public string OpenFileDialog()
     {
       var dialog = new FileOpenPicker();
       var task = dialog.PickSingleFileAsync().AsTask().ContinueWith(
@@ -18,7 +15,7 @@ namespace XP.Mvvm
       return task.Result.Path;
     }
 
-    public string SaveFile()
+    public string SaveFileDialog()
     {
       var dialog = new FileSavePicker();
       var task = dialog.PickSaveFileAsync().AsTask().ContinueWith(
@@ -38,14 +35,9 @@ namespace XP.Mvvm
       return File.Open(userDataFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
     }
 
-    public Task<XDocument> LoadXDocumentAsync(Stream stream)
+    public Stream OpenFile(string filePath)
     {
-      return XDocument.LoadAsync(stream, LoadOptions.None, CancellationToken.None);
-    }
-
-    public Task SaveXDocumentAsync(Stream stream, XElement element)
-    {
-      return element.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
+      return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete | FileShare.Inheritable);
     }
   }
 }

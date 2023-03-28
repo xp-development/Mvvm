@@ -6,10 +6,9 @@ namespace XP.Mvvm
 {
   public interface IFileService
   {
-    string OpenFile();
-    string SaveFile();
+    string OpenFileDialog();
+    string SaveFileDialog();
     Stream GetOrCreateUserProfileStream(string fileName, bool createNew);
-    Task<XDocument> LoadXDocumentAsync(Stream stream);
-    Task SaveXDocumentAsync(Stream stream, XElement element);
+    Stream OpenFile(string filePath);
   }
 }
