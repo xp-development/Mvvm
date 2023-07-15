@@ -39,5 +39,10 @@ namespace XP.Mvvm
     {
       return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete | FileShare.Inheritable);
     }
+
+    public bool IsFileExists(string filePath)
+    {
+      return File.Exists(filePath);
+    }
   }
 }

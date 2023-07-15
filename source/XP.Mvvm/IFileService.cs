@@ -10,5 +10,6 @@ namespace XP.Mvvm
     string SaveFileDialog();
     Stream GetOrCreateUserProfileStream(string fileName, bool createNew);
     Stream OpenFile(string filePath);
+    bool IsFileExists(string filePath);
   }
 }
