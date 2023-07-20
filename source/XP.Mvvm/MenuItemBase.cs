@@ -3,5 +3,7 @@
   public abstract class MenuItemBase
   {
     public string Title { get; set; }
+    
+    public HierarchicalItem Parent { get; set; }
   }
 }
