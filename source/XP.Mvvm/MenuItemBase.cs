@@ -5,5 +5,6 @@
     public string Title { get; set; }
     
     public HierarchicalItem Parent { get; set; }
+    public int Order { get; set; }
   }
 }

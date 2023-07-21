@@ -161,10 +161,16 @@ namespace XP.Mvvm.Regions
 
       var tabViewItem = content as TabViewItem;
       var frameworkElement = tabViewItem?.Content as FrameworkElement;
-      if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
+      var controlsToDeinitialize = new List<FrameworkElement> { frameworkElement };
+      controlsToDeinitialize.AddRange(FindVisualChilds(frameworkElement, x => x.GetValue(RegionManager.RegionProperty) != null));
+
+      foreach (var element in controlsToDeinitialize)
       {
+        if (element?.DataContext is not IViewDeinitialized viewDeinitialized)
+          continue;
+
         await viewDeinitialized.DeinitializedAsync();
-        _log.Debug($"ViewDeinitialized {frameworkElement.GetType()}");
+        _log.Debug($"ViewDeinitialized {element.GetType()}");
       }
 
       var tabControlSelectedContent = content;
