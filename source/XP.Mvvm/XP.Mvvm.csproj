@@ -9,6 +9,13 @@
     <Platforms>x64</Platforms>
   </PropertyGroup>
 
+  <Target Name="SetVersion" BeforeTargets="GetAssemblyVersion">
+    <Exec Command="powershell -ExecutionPolicy Unrestricted -NoProfile -Command &quot;$(VersionCommand)&quot;"
+          ConsoleToMSBuild="true" IgnoreExitCode="false">
+      <Output PropertyName="Version" TaskParameter="ConsoleOutput" />
+    </Exec>
+  </Target>
+
   <ItemGroup>
       <PackageReference Include="Grace" Version="7.2.1" />
       <PackageReference Include="log4net" Version="2.0.15" />
