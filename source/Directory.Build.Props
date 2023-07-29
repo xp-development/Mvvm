@@ -1,5 +1,5 @@
 <Project>
   <PropertyGroup>
-    <VersionCommand Condition=" '$(VersionCommand)' == '' ">(git describe --abbrev=0).Replace(&apos;release/&apos;,&apos;&apos;)</VersionCommand>
+    <VersionCommand>(git describe --abbrev=0).Replace(&apos;release/&apos;,&apos;&apos;)</VersionCommand>
   </PropertyGroup>
 </Project>
