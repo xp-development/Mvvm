@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <Target Name="SetVersion" BeforeTargets="GetAssemblyVersion">
-    <Exec Command="powershell -ExecutionPolicy Unrestricted -NoProfile -Command &quot;$(VersionCommand)&quot;"
+    <Exec Command="powershell -Command &quot;$(VersionCommand)&quot;"
           ConsoleToMSBuild="true" IgnoreExitCode="false">
       <Output PropertyName="Version" TaskParameter="ConsoleOutput" />
     </Exec>
