@@ -1,7 +1,6 @@
-﻿namespace XP.Mvvm
+﻿namespace XP.Mvvm;
+
+public class CommandItem : MenuItemBase
 {
-  public class CommandItem : MenuItemBase
-  {
-    public DelegateCommand Command { get; set; }
-  }
+  public DelegateCommand Command { get; set; }
 }
