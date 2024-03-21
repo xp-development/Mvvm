@@ -27,6 +27,7 @@ namespace XP.Mvvm
 
     public Task DeinitializedAsync()
     {
+      IsInitialized = false;
       return OnDeinitializedAsync();
     }
 
