@@ -16,5 +16,7 @@ namespace XP.Mvvm.DependencyInjection
 
     void RegisterTransientObject<TInterface, TObject>()
       where TObject : TInterface;
+
+    ILifetimeScope BeginLifetimeScope();
   }
 }

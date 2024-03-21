@@ -45,6 +45,11 @@ namespace XP.Mvvm.DependencyInjection
       return new ServiceLocator(_container.CreateChildScope());
     }
 
+    public ILifetimeScope BeginLifetimeScope()
+    {
+      return new LifetimeScope(_container.BeginLifetimeScope());
+    }
+
     public void RegisterSingletonObject<TInterface, TObject>()
       where TObject : TInterface
     {
@@ -89,6 +94,20 @@ namespace XP.Mvvm.DependencyInjection
     {
       _log.Debug($"RegisterTransientObject export {typeof(TObject)} as {typeof(TInterface)} with key {key}");
       _container.Configure(c => c.Export<TObject>().AsKeyed<TInterface>(key));
+    }
+
+    public void RegisterSingletonObject<TInterface, TObject>(string key)
+      where TObject : TInterface
+    {
+      _log.Debug($"RegisterSingletonObject export {typeof(TObject)} as {typeof(TInterface)} with key {key}");
+      _container.Configure(c => c.Export<TObject>().AsKeyed<TInterface>(key).Lifestyle.Singleton());
+    }
+
+    public void RegisterSingletonPerScopeObject<TInterface, TObject>(string key)
+      where TObject : TInterface
+    {
+      _log.Debug($"RegisterSingletonPerScopeObject export {typeof(TObject)} as {typeof(TInterface)} with key {key}");
+      _container.Configure(c => c.Export<TObject>().AsKeyed<TInterface>(key).Lifestyle.SingletonPerScope());
     }
   }
 }
