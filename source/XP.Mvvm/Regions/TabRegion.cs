@@ -72,27 +72,33 @@ namespace XP.Mvvm.Regions
     {
       var controlsToLoad = new List<FrameworkElement> { frameworkElement };
       controlsToLoad.AddRange(FindVisualChilds(frameworkElement, x => x.GetValue(RegionManager.RegionProperty) != null));
-      foreach (var element in controlsToLoad)
+      foreach (var element in controlsToLoad.Where(x => x != null)
+                                            .Select(x => x.DataContext)
+                                            .Distinct())
       {
-        if (element.DataContext is not IViewInitialized { IsInitialized: false } viewInitialized)
+        if (element is not IViewInitialized { IsInitialized: false } viewInitialized)
           continue;
         
         await viewInitialized.InitializedAsync(parameter);
         _log.Debug($"ViewInitialized {element.GetType()}");
       }
 
-      foreach (var element in controlsToLoad)
+      foreach (var element in controlsToLoad.Where(x => x != null)
+                                            .Select(x => x.DataContext)
+                                            .Distinct())
       {
-        if (element.DataContext is not IViewLoading viewLoading)
+        if (element is not IViewLoading viewLoading)
           continue;
         
         await viewLoading.LoadingAsync(parameter);
         _log.Debug($"ViewLoading {element.GetType()}");
       }
 
-      foreach (var element in controlsToLoad)
+      foreach (var element in controlsToLoad.Where(x => x != null)
+                                            .Select(x => x.DataContext)
+                                            .Distinct())
       {
-        if (element.DataContext is not IViewLoaded viewLoaded)
+        if (element is not IViewLoaded viewLoaded)
           continue;
         
         await viewLoaded.LoadedAsync(parameter);
@@ -111,9 +117,11 @@ namespace XP.Mvvm.Regions
       controlsToUnload.AddRange(FindVisualChilds(tabContent, x => x.GetValue(RegionManager.RegionProperty) != null));
       
       var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
-      foreach (var frameworkElement in controlsToUnload)
+      foreach (var frameworkElement in controlsToUnload.Where(x => x != null)
+                                                       .Select(x => x.DataContext)
+                                                       .Distinct())
       {
-        if (frameworkElement?.DataContext is not IViewUnloading viewUnloading)
+        if (frameworkElement is not IViewUnloading viewUnloading)
           continue;
         
         await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
@@ -125,9 +133,11 @@ namespace XP.Mvvm.Regions
         }
       }
 
-      foreach (var frameworkElement in controlsToUnload)
+      foreach (var frameworkElement in controlsToUnload.Where(x => x != null)
+                                                       .Select(x => x.DataContext)
+                                                       .Distinct())
       {
-        if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
+        if (frameworkElement is IViewUnloaded viewUnloaded)
         {
           await viewUnloaded.UnloadedAsync();
           _log.Debug($"Unloaded {tabContent.GetType()}");
@@ -164,9 +174,12 @@ namespace XP.Mvvm.Regions
       var controlsToDeinitialize = new List<FrameworkElement> { frameworkElement };
       controlsToDeinitialize.AddRange(FindVisualChilds(frameworkElement, x => x.GetValue(RegionManager.RegionProperty) != null));
 
-      foreach (var element in controlsToDeinitialize)
+      foreach (var element in controlsToDeinitialize
+               .Where(x => x != null)
+               .Select(x => x.DataContext)
+               .Distinct())
       {
-        if (element?.DataContext is not IViewDeinitialized viewDeinitialized)
+        if (element is not IViewDeinitialized viewDeinitialized)
           continue;
 
         await viewDeinitialized.DeinitializedAsync();
