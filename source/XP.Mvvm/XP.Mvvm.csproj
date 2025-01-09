@@ -3,17 +3,13 @@
       <WindowsSdkPackageVersion>10.0.22621.38</WindowsSdkPackageVersion>
       <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
       <UseWinUI>true</UseWinUI>
-    <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
-    <GenerateLibraryLayout>true</GenerateLibraryLayout>
-      <Platform>x64</Platform>
+      <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
+      <GenerateLibraryLayout>true</GenerateLibraryLayout>
       <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
+      <AssemblyVersion>0.4.0.0</AssemblyVersion>
+      <FileVersion>0.4.0.0</FileVersion>
+      <NoWarn>$(NoWarn);NETSDK1206</NoWarn>
   </PropertyGroup>
-
-  <Target Name="SetVersion" BeforeTargets="GetAssemblyVersion">
-    <Exec Command="powershell -Command &quot;$(VersionCommand)&quot;" ConsoleToMSBuild="true" IgnoreExitCode="false">
-      <Output PropertyName="Version" TaskParameter="ConsoleOutput" />
-    </Exec>
-  </Target>
 
   <ItemGroup>
       <PackageReference Include="Grace" Version="7.2.1" />
