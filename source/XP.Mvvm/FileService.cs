@@ -26,15 +26,21 @@ namespace XP.Mvvm
     public Stream GetOrCreateUserProfileStream(string fileName, bool createNew)
     {
       var userDataFolder = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-      var applicationName = Assembly.GetEntryAssembly().GetName().Name;
-      var userDataFilePath = Path.Combine(userDataFolder, applicationName, fileName);
-      Directory.CreateDirectory(Path.Combine(userDataFolder, applicationName));
+      var product = GetProduct();
+      var userDataFilePath = Path.Combine(userDataFolder, product, fileName);
+      Directory.CreateDirectory(Path.Combine(userDataFolder, product));
       if (createNew)
         File.Delete(userDataFilePath);
 
       return File.Open(userDataFilePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
     }
-
+    
+    private static string GetProduct()
+    {
+      var customAttributes = Assembly.GetEntryAssembly()!.GetCustomAttributes(typeof(AssemblyProductAttribute), false);
+      return ((AssemblyProductAttribute)customAttributes[0]).Product;
+    }
+    
     public Stream OpenFile(string filePath)
     {
       return new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite | FileShare.Delete | FileShare.Inheritable);
