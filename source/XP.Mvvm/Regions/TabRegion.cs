@@ -117,9 +117,8 @@ namespace XP.Mvvm.Regions
       controlsToUnload.AddRange(FindVisualChilds(tabContent, x => x.GetValue(RegionManager.RegionProperty) != null));
       
       var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
-      foreach (var frameworkElement in controlsToUnload.Where(x => x != null)
-                                                       .Select(x => x.DataContext)
-                                                       .Distinct())
+      var viewModelsToUnload = GetViewModelsToUnload(controlsToUnload);
+      foreach (var frameworkElement in viewModelsToUnload)
       {
         if (frameworkElement is not IViewUnloading viewUnloading)
           continue;
@@ -133,9 +132,7 @@ namespace XP.Mvvm.Regions
         }
       }
 
-      foreach (var frameworkElement in controlsToUnload.Where(x => x != null)
-                                                       .Select(x => x.DataContext)
-                                                       .Distinct())
+      foreach (var frameworkElement in viewModelsToUnload)
       {
         if (frameworkElement is IViewUnloaded viewUnloaded)
         {
@@ -145,6 +142,16 @@ namespace XP.Mvvm.Regions
       }
 
       return false;
+    }
+
+    private static List<object> GetViewModelsToUnload(List<FrameworkElement> controlsToUnload)
+    {
+      var list = controlsToUnload.Where(x => x != null)
+                                 .Select(x => x.DataContext).ToList();
+      list.AddRange(controlsToUnload.Where(x => x != null && x is ContentControl)
+                                    .Select(x => (((ContentControl)x).Content as FrameworkElement)?.DataContext));
+      var controlsToUnloadList = list.Distinct().ToList();
+      return controlsToUnloadList;
     }
 
     public Task CloseCurrentAsync()
@@ -173,11 +180,8 @@ namespace XP.Mvvm.Regions
       var frameworkElement = tabViewItem?.Content as FrameworkElement;
       var controlsToDeinitialize = new List<FrameworkElement> { frameworkElement };
       controlsToDeinitialize.AddRange(FindVisualChilds(frameworkElement, x => x.GetValue(RegionManager.RegionProperty) != null));
-
-      foreach (var element in controlsToDeinitialize
-               .Where(x => x != null)
-               .Select(x => x.DataContext)
-               .Distinct())
+      var viewModelsToUnload = GetViewModelsToUnload(controlsToDeinitialize);
+      foreach (var element in viewModelsToUnload)
       {
         if (element is not IViewDeinitialized viewDeinitialized)
           continue;
