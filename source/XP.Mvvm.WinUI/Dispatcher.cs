@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.UI.Dispatching;
 
-namespace XP.Mvvm
+namespace XP.Mvvm.WinUI
 {
   public class Dispatcher
   {

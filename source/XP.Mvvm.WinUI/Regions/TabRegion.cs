@@ -6,8 +6,9 @@ using log4net;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using XP.Mvvm.Regions;
 
-namespace XP.Mvvm.Regions
+namespace XP.Mvvm.WinUI.Regions
 {
   public class TabRegion : IRegion
   {

@@ -1,9 +1,10 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using log4net;
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using XP.Mvvm.Regions;
 
-namespace XP.Mvvm.Regions
+namespace XP.Mvvm.WinUI.Regions
 {
   public class SingleContentRegion : IRegion
   {

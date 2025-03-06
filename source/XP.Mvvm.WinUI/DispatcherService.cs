@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 
-namespace XP.Mvvm;
+namespace XP.Mvvm.WinUI;
 
 public class DispatcherService : IDispatcherService
 {

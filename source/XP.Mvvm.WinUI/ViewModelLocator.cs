@@ -2,7 +2,7 @@
 using Microsoft.UI.Xaml;
 using XP.Mvvm.DependencyInjection;
 
-namespace XP.Mvvm
+namespace XP.Mvvm.WinUI
 {
   public class ViewModelLocator
   {

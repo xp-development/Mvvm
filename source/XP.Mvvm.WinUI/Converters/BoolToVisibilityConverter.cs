@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Globalization;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
 
-namespace XP.Mvvm.Converters
+namespace XP.Mvvm.WinUI.Converters
 {
   public class BoolToVisibilityConverter : MarkupExtension, IValueConverter
   {
