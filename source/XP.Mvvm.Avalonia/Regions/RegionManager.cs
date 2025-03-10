@@ -25,11 +25,21 @@ namespace XP.Mvvm.Avalonia.Regions
     private static readonly Dictionary<string, IRegion> _regions = new();
 
     public static readonly StyledProperty<string> RegionProperty = AvaloniaProperty.RegisterAttached<Control, string>(
-      "Region", typeof(RegionManager), "");
-
-    public IRegion GetRegion(string region)
+      "Region", typeof(RegionManager));
+    
+    public static void SetRegion(AvaloniaObject element, string commandValue)
     {
-      return _regions[region];
+      element.SetValue(RegionProperty, commandValue);
+    }
+    
+    public static string GetRegion(AvaloniaObject element)
+    {
+      return element.GetValue(RegionProperty);
+    }
+
+    public IRegion GetRegion(string regionName)
+    {
+      return _regions[regionName];
     }
   }
 }

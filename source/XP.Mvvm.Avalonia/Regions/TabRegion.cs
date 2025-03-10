@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using log4net;
 using XP.Mvvm.Regions;
@@ -33,7 +34,7 @@ namespace XP.Mvvm.Avalonia.Regions
       
       var frameworkElement = (Control)content;
       _taskCompletionSource = new TaskCompletionSource();
-      var tabViewItem = new TabItem { Content = content, Header = (ViewModelBase)frameworkElement.DataContext, Tag = parameter };
+      var tabViewItem = new TabItem { Content = content, Header = (frameworkElement.DataContext as ViewModelBase)?.DisplayName, Tag = parameter };
       _tabControl.Items.Add(tabViewItem);
       _tabControl.SelectedItem = tabViewItem;
       await _taskCompletionSource.Task;
@@ -197,12 +198,13 @@ namespace XP.Mvvm.Avalonia.Regions
 
     public object Current => (_tabControl.SelectedItem as TabItem)?.Content;
 
-    private static IEnumerable<Control> FindVisualChilds(Visual control, Func<Control, bool> condition)
+    private static IEnumerable<Control> FindVisualChilds(ILogical control, Func<Control, bool> condition)
     {
       if (control == null)
         yield return (Control)Enumerable.Empty<Control>();
       
-      foreach(var child in control.GetVisualDescendants())
+      //foreach(var child in control.GetLogicalChildren())
+      foreach(var child in control.GetLogicalChildren())
       {
         if (child is Control visualChild && condition(visualChild))
         {
@@ -213,7 +215,7 @@ namespace XP.Mvvm.Avalonia.Regions
           }
           else if (visualChild is ItemsControl itemsControl)
           {
-            foreach (var item in itemsControl.Items)
+            foreach (var item in itemsControl.GetLogicalChildren())
               yield return (Control)item;
           }
           else if(visualChild is ContentControl)

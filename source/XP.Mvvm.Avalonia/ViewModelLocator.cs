@@ -18,9 +18,19 @@ namespace XP.Mvvm.Avalonia
       control.DataContext = ViewModelServiceLocator.Get((Type)arg2.NewValue);
     }
 
-    public static readonly StyledProperty<Type> ViewModelTypeProperty =
-      AvaloniaProperty.RegisterAttached<Control, Type>("ViewModelType", typeof(ViewModelLocator), typeof(Type), false, BindingMode.TwoWay);
+    public static readonly AttachedProperty<Type> ViewModelTypeProperty =
+      AvaloniaProperty.RegisterAttached<ViewModelLocator, Control, Type>("ViewModelType", typeof(Type), false, BindingMode.TwoWay);
+    
+    public static void SetViewModelType(AvaloniaObject element, Type commandValue)
+    {
+      element.SetValue(ViewModelTypeProperty, commandValue);
+    }
 
+    public static Type GetViewModelType(AvaloniaObject element)
+    {
+      return element.GetValue(ViewModelTypeProperty);
+    }
+    
     public static IServiceLocator ViewModelServiceLocator;
 
   }
