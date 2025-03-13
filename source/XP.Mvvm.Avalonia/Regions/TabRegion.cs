@@ -43,6 +43,9 @@ namespace XP.Mvvm.Avalonia.Regions
     
     private async void TabControlSelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+      if (sender != e.Source)
+        return;
+      
       if (_suppressChanging)
         return;
 
@@ -201,9 +204,8 @@ namespace XP.Mvvm.Avalonia.Regions
     private static IEnumerable<Control> FindVisualChilds(ILogical control, Func<Control, bool> condition)
     {
       if (control == null)
-        yield return (Control)Enumerable.Empty<Control>();
+        yield break;
       
-      //foreach(var child in control.GetLogicalChildren())
       foreach(var child in control.GetLogicalChildren())
       {
         if (child is Control visualChild && condition(visualChild))
