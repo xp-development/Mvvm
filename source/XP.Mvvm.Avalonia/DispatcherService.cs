@@ -5,8 +5,8 @@ namespace XP.Mvvm.Avalonia;
 
 public class DispatcherService : IDispatcherService
 {
-    public Task BeginInvoke(Action action)
+    public async Task BeginInvoke(Action action)
     {
-        return Dispatcher.CurrentDispatcher.BeginInvoke(action);
+        await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(action);
     }
 }
