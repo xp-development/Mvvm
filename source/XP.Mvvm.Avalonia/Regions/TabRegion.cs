@@ -34,7 +34,12 @@ namespace XP.Mvvm.Avalonia.Regions
       
       var frameworkElement = (Control)content;
       _taskCompletionSource = new TaskCompletionSource();
-      var tabViewItem = new TabItem { Content = content, Header = (frameworkElement.DataContext as ViewModelBase)?.DisplayName, Tag = parameter };
+      var tabViewItem = new TabItem
+                        {
+                          Content = content,
+                          Header = frameworkElement.DataContext,
+                          Tag = parameter
+                        };
       _tabControl.Items.Add(tabViewItem);
       _tabControl.SelectedItem = tabViewItem;
       await _taskCompletionSource.Task;
