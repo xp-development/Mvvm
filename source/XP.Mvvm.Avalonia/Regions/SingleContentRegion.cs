@@ -67,8 +67,8 @@ namespace XP.Mvvm.Avalonia.Regions
 
     public Task CloseAsync(object content)
     {
-      _log.Debug($"Close {content.GetType()}");
-      return AttachAsync(new ContentControl());
+      _log.Debug($"Close {content?.GetType()}");
+      return AttachAsync(new ContentControl { DataContext = null });
     }
 
     public Task CloseCurrentAsync()
