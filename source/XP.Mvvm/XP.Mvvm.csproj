@@ -2,7 +2,6 @@
   <PropertyGroup>
       <WindowsSdkPackageVersion>10.0.22621.38</WindowsSdkPackageVersion>
       <TargetFramework>net9.0-windows10.0.22621.0</TargetFramework>
-      <UseWinUI>true</UseWinUI>
       <EnablePreviewMsixTooling>true</EnablePreviewMsixTooling>
       <GenerateLibraryLayout>true</GenerateLibraryLayout>
       <RuntimeIdentifiers>win-x64</RuntimeIdentifiers>
@@ -14,7 +13,5 @@
   <ItemGroup>
       <PackageReference Include="Grace" Version="7.2.1" />
       <PackageReference Include="log4net" Version="2.0.15" />
-      <PackageReference Include="Microsoft.WindowsAppSDK" Version="1.2.221209.1" />
-      <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.755" />
   </ItemGroup>
 </Project>

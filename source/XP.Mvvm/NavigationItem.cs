@@ -2,7 +2,7 @@
 
 namespace XP.Mvvm
 {
-  public class NavigationItem : MenuItemBase
+  public class NavigationItem : MenuItem
   {
     public Type TargetType { get; set; }
   }

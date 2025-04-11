@@ -1,8 +1,9 @@
-﻿using Microsoft.UI.Xaml;
+﻿using System.Collections.Generic;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using System.Collections.Generic;
+using XP.Mvvm.Regions;
 
-namespace XP.Mvvm.Regions
+namespace XP.Mvvm.WinUI.Regions
 {
   public class RegionManager : IRegionManager
   {

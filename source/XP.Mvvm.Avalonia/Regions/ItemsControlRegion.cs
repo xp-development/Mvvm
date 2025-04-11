@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Avalonia.Controls;
 using log4net;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
+using XP.Mvvm.Regions;
 
-namespace XP.Mvvm.Regions;
+namespace XP.Mvvm.Avalonia.Regions;
 
 public class ItemsControlRegion : IRegion
 {
@@ -21,7 +21,7 @@ public class ItemsControlRegion : IRegion
         _log.Debug($"Attach {content.GetType()}");
 
         _itemsControl.Items.Add(content);
-        var frameworkElement = (FrameworkElement)content;
+        var frameworkElement = (Control)content;
         if (frameworkElement.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
         {
             await viewInitialized.InitializedAsync(parameter);
@@ -48,7 +48,7 @@ public class ItemsControlRegion : IRegion
         if (await UnloadContent(content))
             return;
 
-        var frameworkElement = content as FrameworkElement;
+        var frameworkElement = content as Control;
         if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
         {
             await viewDeinitialized.DeinitializedAsync();
@@ -63,7 +63,7 @@ public class ItemsControlRegion : IRegion
         if (content == null)
             return false;
 
-        var frameworkElement = content as FrameworkElement;
+        var frameworkElement = content as Control;
         if (frameworkElement?.DataContext is IViewUnloading viewUnloading)
         {
             var viewUnloadingEventArgs = new ViewUnloadingEventArgs();

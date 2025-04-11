@@ -1,9 +1,9 @@
-﻿using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
+using Avalonia.Controls;
 using log4net;
+using XP.Mvvm.Regions;
 
-namespace XP.Mvvm.Regions
+namespace XP.Mvvm.Avalonia.Regions
 {
   public class SingleContentRegion : IRegion
   {
@@ -19,7 +19,7 @@ namespace XP.Mvvm.Regions
     {
       _log.Debug($"Attach {content.GetType()}");
 
-      var frameworkElement = _contentControl.Content as FrameworkElement;
+      var frameworkElement = _contentControl.Content as Control;
       if (frameworkElement?.DataContext is IViewUnloading viewUnloading)
       {
         var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
@@ -44,8 +44,8 @@ namespace XP.Mvvm.Regions
         _log.Debug($"ViewDeinitialized {frameworkElement.GetType()}");
       }
 
-      _contentControl.Content = (FrameworkElement) content;
-      frameworkElement = (FrameworkElement) _contentControl.Content;
+      _contentControl.Content = (Control) content;
+      frameworkElement = (Control) _contentControl.Content;
       if (frameworkElement?.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
       {
         await viewInitialized.InitializedAsync(parameter);
@@ -67,8 +67,8 @@ namespace XP.Mvvm.Regions
 
     public Task CloseAsync(object content)
     {
-      _log.Debug($"Close {content.GetType()}");
-      return AttachAsync(new ContentControl());
+      _log.Debug($"Close {content?.GetType()}");
+      return AttachAsync(new ContentControl { DataContext = null });
     }
 
     public Task CloseCurrentAsync()
