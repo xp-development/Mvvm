@@ -10,8 +10,8 @@ public class DispatcherService : IDispatcherService
         await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(action);
     }
 
-    public async Task BeginInvokeAsync(Func<Task> action)
+    public Task BeginInvokeAsync(Func<Task> action)
     {
-        await global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(action);
+        return global::Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(action);
     }
 }
