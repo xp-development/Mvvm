@@ -12,6 +12,8 @@ namespace XP.Mvvm.DependencyInjection
     void RegisterSingletonObject<TInterface, TObject>()
       where TObject : TInterface;
 
+    void RegisterSingletonObject(Type interfaceType, Type implementationType);
+
     void RegisterSingletonObject<TInterface>(TInterface obj);
 
     void RegisterTransientObject<TInterface, TObject>()

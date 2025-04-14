@@ -57,6 +57,12 @@ namespace XP.Mvvm.DependencyInjection
       _container.Configure(c => c.Export<TObject>().As<TInterface>().Lifestyle.Singleton());
     }
 
+    public void RegisterSingletonObject(Type interfaceType, Type implementationType)
+    {
+      _log.Debug($"RegisterSingletonObject export {implementationType} as {interfaceType}");
+      _container.Configure(c => c.Export(implementationType).As(interfaceType).Lifestyle.Singleton());
+    }
+
     public void RegisterSingletonObject<TInterface, TInterface2, TObject>()
       where TObject : TInterface, TInterface2
     {
