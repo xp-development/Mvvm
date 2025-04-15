@@ -7,24 +7,26 @@ using Avalonia.Controls;
 using Avalonia.LogicalTree;
 using Avalonia.VisualTree;
 using log4net;
+using XP.Mvvm.Events;
 using XP.Mvvm.Regions;
 
 namespace XP.Mvvm.Avalonia.Regions
 {
-  public class TabRegion : IRegion
+  public class TabRegion : RegionBase
   {
     private readonly TabControl _tabControl;
     private bool _suppressChanging;
     private static readonly ILog _log = LogManager.GetLogger(typeof(TabRegion));
     private TaskCompletionSource _taskCompletionSource;
 
-    public TabRegion(TabControl tabControl)
+    public TabRegion(IEventAggregator eventAggregator, TabControl tabControl)
+    : base(eventAggregator)
     {
       _tabControl = tabControl;
       _tabControl.SelectionChanged += TabControlSelectionChanged;
     }
 
-    public async Task AttachAsync(object content, object parameter = null)
+    public override async Task AttachAsync(object content, object parameter = null)
     {
       _log.Debug($"Attach {content.GetType()}");
       
@@ -89,6 +91,7 @@ namespace XP.Mvvm.Avalonia.Regions
         if (element is not IViewInitialized { IsInitialized: false } viewInitialized)
           continue;
         
+        await PublishEventMessage(typeof(ViewInitializedEvent<>), frameworkElement.DataContext, parameter);
         await viewInitialized.InitializedAsync(parameter);
         _log.Debug($"ViewInitialized {element.GetType()}");
       }
@@ -164,12 +167,12 @@ namespace XP.Mvvm.Avalonia.Regions
       return controlsToUnloadList;
     }
 
-    public Task CloseCurrentAsync()
+    public override Task CloseCurrentAsync()
     {
       return CloseAsync(_tabControl.SelectedItem);
     }
 
-    public async Task ReplaceCurrentWithAsync(object content, object parameter = null)
+    public override async Task ReplaceCurrentWithAsync(object content, object parameter = null)
     {
       _log.Debug($"Replace {_tabControl.SelectedItem.GetType()} with {content.GetType()}");
 
@@ -179,7 +182,7 @@ namespace XP.Mvvm.Avalonia.Regions
       await AttachAsync(content, parameter);
     }
 
-    public async Task CloseAsync(object content)
+    public override async Task CloseAsync(object content)
     {
       _log.Debug($"Close {content.GetType()}");
 
@@ -193,10 +196,7 @@ namespace XP.Mvvm.Avalonia.Regions
       var viewModelsToUnload = GetViewModelsToUnload(controlsToDeinitialize);
       foreach (var element in viewModelsToUnload)
       {
-        if (element is not IViewDeinitialized viewDeinitialized)
-          continue;
-
-        await viewDeinitialized.DeinitializedAsync();
+        await PublishEventMessage(typeof(ViewDeinitializedEvent<>), element, null);
         _log.Debug($"ViewDeinitialized {element.GetType()}");
       }
 
@@ -204,7 +204,7 @@ namespace XP.Mvvm.Avalonia.Regions
       _tabControl.Items.Remove(tabControlSelectedContent);
     }
 
-    public object Current => (_tabControl.SelectedItem as TabItem)?.Content;
+    public override object Current => (_tabControl.SelectedItem as TabItem)?.Content;
 
     private static IEnumerable<Control> FindVisualChilds(ILogical control, Func<Control, bool> condition)
     {

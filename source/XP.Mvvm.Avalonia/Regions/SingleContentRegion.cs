@@ -1,21 +1,25 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Avalonia.Controls;
 using log4net;
-using XP.Mvvm.Regions;
+using XP.Mvvm.Events;
 
 namespace XP.Mvvm.Avalonia.Regions
 {
-  public class SingleContentRegion : IRegion
+  public class SingleContentRegion : RegionBase
   {
     private readonly ContentControl _contentControl;
     private readonly ILog _log = LogManager.GetLogger(typeof(SingleContentRegion));
+    private IEventAggregator _eventAggregator;
 
-    public SingleContentRegion(ContentControl contentControl)
+    public SingleContentRegion(IEventAggregator eventAggregator, ContentControl contentControl)
+    : base(eventAggregator)
     {
+      _eventAggregator = eventAggregator;
       _contentControl = contentControl;
     }
 
-    public async Task AttachAsync(object content, object parameter = null)
+    public override async Task AttachAsync(object content, object parameter = null)
     {
       _log.Debug($"Attach {content.GetType()}");
 
@@ -38,20 +42,12 @@ namespace XP.Mvvm.Avalonia.Regions
         _log.Debug($"ViewUnloaded {frameworkElement.GetType()}");
       }
 
-      if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
-      {
-        await viewDeinitialized.DeinitializedAsync();
-        _log.Debug($"ViewDeinitialized {frameworkElement.GetType()}");
-      }
-
+      await PublishEventMessage(typeof(ViewDeinitializedEvent<>), frameworkElement.DataContext, null);
+      
       _contentControl.Content = (Control) content;
       frameworkElement = (Control) _contentControl.Content;
-      if (frameworkElement?.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
-      {
-        await viewInitialized.InitializedAsync(parameter);
-        _log.Debug($"ViewInitialized {frameworkElement.GetType()}");
-      }
-
+      await PublishEventMessage(typeof(ViewInitializedEvent<>), frameworkElement.DataContext, parameter);
+        
       if (frameworkElement?.DataContext is IViewLoading viewLoading)
       {
         await viewLoading.LoadingAsync(parameter);
@@ -65,23 +61,23 @@ namespace XP.Mvvm.Avalonia.Regions
       }
     }
 
-    public Task CloseAsync(object content)
+    public override Task CloseAsync(object content)
     {
       _log.Debug($"Close {content?.GetType()}");
       return AttachAsync(new ContentControl { DataContext = null });
     }
 
-    public Task CloseCurrentAsync()
+    public override Task CloseCurrentAsync()
     {
       return CloseAsync(_contentControl);
     }
 
-    public Task ReplaceCurrentWithAsync(object content, object parameter = null)
+    public override Task ReplaceCurrentWithAsync(object content, object parameter = null)
     {
       _log.Debug($"Replace {_contentControl.GetType()} with {content.GetType()}");
       return AttachAsync(content, parameter);
     }
 
-    public object Current => _contentControl;
+    public override object Current => _contentControl;
   }
 }

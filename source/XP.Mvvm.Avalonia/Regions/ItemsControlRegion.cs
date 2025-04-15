@@ -2,32 +2,29 @@
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using log4net;
-using XP.Mvvm.Regions;
+using XP.Mvvm.Events;
 
 namespace XP.Mvvm.Avalonia.Regions;
 
-public class ItemsControlRegion : IRegion
+public class ItemsControlRegion : RegionBase
 {
     private readonly ItemsControl _itemsControl;
     private static readonly ILog _log = LogManager.GetLogger(typeof(ItemsControlRegion));
 
-    public ItemsControlRegion(ItemsControl itemsControl)
+    public ItemsControlRegion(IEventAggregator eventAggregator, ItemsControl itemsControl)
+    : base(eventAggregator)
     {
         _itemsControl = itemsControl;
     }
 
-    public async Task AttachAsync(object content, object parameter = null)
+    public override async Task AttachAsync(object content, object parameter = null)
     {
         _log.Debug($"Attach {content.GetType()}");
 
         _itemsControl.Items.Add(content);
         var frameworkElement = (Control)content;
-        if (frameworkElement.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
-        {
-            await viewInitialized.InitializedAsync(parameter);
-            _log.Debug($"ViewInitialized {frameworkElement.GetType()}");
-        }
-        
+        await PublishEventMessage(typeof(ViewInitializedEvent<>), frameworkElement.DataContext, parameter);
+
         if (frameworkElement.DataContext is IViewLoading viewLoading)
         {
             await viewLoading.LoadingAsync(parameter);
@@ -41,7 +38,7 @@ public class ItemsControlRegion : IRegion
         }
     }
 
-    public async Task CloseAsync(object content)
+    public override async Task CloseAsync(object content)
     {
         _log.Debug($"Close {content.GetType()}");
 
@@ -49,12 +46,7 @@ public class ItemsControlRegion : IRegion
             return;
 
         var frameworkElement = content as Control;
-        if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
-        {
-            await viewDeinitialized.DeinitializedAsync();
-            _log.Debug($"ViewDeinitialized {frameworkElement.GetType()}");
-        }
-        
+        await PublishEventMessage(typeof(ViewDeinitializedEvent<>), frameworkElement.DataContext, null);
         _itemsControl.Items.Remove(content);
     }
     
@@ -85,15 +77,15 @@ public class ItemsControlRegion : IRegion
         return false;
     }
 
-    public Task CloseCurrentAsync()
+    public override Task CloseCurrentAsync()
     {
         throw new NotSupportedException();
     }
 
-    public Task ReplaceCurrentWithAsync(object content, object parameter = null)
+    public override Task ReplaceCurrentWithAsync(object content, object parameter = null)
     {
         throw new NotSupportedException();
     }
 
-    public object Current => throw new NotSupportedException();
+    public override object Current => throw new NotSupportedException();
 }
