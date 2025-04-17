@@ -17,6 +17,8 @@ namespace XP.Mvvm.DependencyInjection
     void RegisterTransientObject<TInterface, TObject>()
       where TObject : TInterface;
 
+    void RegisterSingletonObject(Type interfaceType, Type implementationType);
+
     ILifetimeScope BeginLifetimeScope();
   }
 }

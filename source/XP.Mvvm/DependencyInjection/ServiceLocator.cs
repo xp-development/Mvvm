@@ -95,6 +95,12 @@ namespace XP.Mvvm.DependencyInjection
       _log.Debug($"RegisterTransientObject export {typeof(TObject)} as {typeof(TInterface)} with key {key}");
       _container.Configure(c => c.Export<TObject>().AsKeyed<TInterface>(key));
     }
+    
+    public void RegisterSingletonObject(Type interfaceType, Type implementationType)
+    {
+      _log.Debug($"RegisterSingletonObject export {implementationType} as {interfaceType}");
+      _container.Configure(c => c.Export(implementationType).As(interfaceType).Lifestyle.Singleton());
+    }
 
     public void RegisterSingletonObject<TInterface, TObject>(string key)
       where TObject : TInterface
