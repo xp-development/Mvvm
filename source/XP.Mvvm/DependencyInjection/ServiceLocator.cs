@@ -28,7 +28,7 @@ namespace XP.Mvvm.DependencyInjection
       return _container.LocateAll<T>();
     }
 
-    public T Get<T>(string key)
+    public T Get<T>(object key)
     {
       _log.Debug($"Get {typeof(T)} with key: {key}");
       return _container.Locate<T>(withKey: key);
@@ -76,7 +76,7 @@ namespace XP.Mvvm.DependencyInjection
       _container.Configure(c => c.ExportInstance(obj).As<TInterface>());
     }
 
-    public void RegisterTransientObject<TInterface>(TInterface obj, string key)
+    public void RegisterTransientObject<TInterface>(TInterface obj, object key)
     {
       _log.Debug($"RegisterTransientObject export {obj.GetType()} as {typeof(TInterface)} with key {key}");
       _container.Configure(c => c.ExportInstance(obj).AsKeyed<TInterface>(key));
@@ -89,7 +89,7 @@ namespace XP.Mvvm.DependencyInjection
       _container.Configure(c => c.Export<TObject>().As<TInterface>());
     }
 
-    public void RegisterTransientObject<TInterface, TObject>(string key)
+    public void RegisterTransientObject<TInterface, TObject>(object key)
       where TObject : TInterface
     {
       _log.Debug($"RegisterTransientObject export {typeof(TObject)} as {typeof(TInterface)} with key {key}");
@@ -102,14 +102,14 @@ namespace XP.Mvvm.DependencyInjection
       _container.Configure(c => c.Export(implementationType).As(interfaceType).Lifestyle.Singleton());
     }
 
-    public void RegisterSingletonObject<TInterface, TObject>(string key)
+    public void RegisterSingletonObject<TInterface, TObject>(object key)
       where TObject : TInterface
     {
       _log.Debug($"RegisterSingletonObject export {typeof(TObject)} as {typeof(TInterface)} with key {key}");
       _container.Configure(c => c.Export<TObject>().AsKeyed<TInterface>(key).Lifestyle.Singleton());
     }
 
-    public void RegisterSingletonPerScopeObject<TInterface, TObject>(string key)
+    public void RegisterSingletonPerScopeObject<TInterface, TObject>(object key)
       where TObject : TInterface
     {
       _log.Debug($"RegisterSingletonPerScopeObject export {typeof(TObject)} as {typeof(TInterface)} with key {key}");

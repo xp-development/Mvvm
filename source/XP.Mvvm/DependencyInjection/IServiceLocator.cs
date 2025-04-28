@@ -5,7 +5,7 @@ namespace XP.Mvvm.DependencyInjection
   public interface IServiceLocator
   {
     T Get<T>();
-    T Get<T>(string key);
+    T Get<T>(object key);
     object Get(Type type);
     IServiceLocator CreateChildServiceLocator();
 
