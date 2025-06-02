@@ -1,7 +1,6 @@
-﻿namespace XP.Mvvm
+﻿namespace XP.Mvvm;
+
+public class ViewUnloadingEventArgs
 {
-  public class ViewUnloadingEventArgs
-  {
-    public bool Cancel { get; set; }
-  }
+  public bool Cancel { get; set; }
 }

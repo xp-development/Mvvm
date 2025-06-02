@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace XP.Mvvm
+namespace XP.Mvvm;
+
+public interface IViewUnloading
 {
-  public interface IViewUnloading
-  {
-    Task UnloadingAsync(ViewUnloadingEventArgs eventArgs);
-  }
+  Task UnloadingAsync(ViewUnloadingEventArgs eventArgs);
 }

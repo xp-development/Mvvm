@@ -1,7 +1,6 @@
-﻿namespace XP.Mvvm.Regions
+﻿namespace XP.Mvvm.Regions;
+
+public interface IRegionManager
 {
-  public interface IRegionManager
-  {
-    IRegion GetRegion(string region);
-  }
+  IRegion GetRegion(string region);
 }

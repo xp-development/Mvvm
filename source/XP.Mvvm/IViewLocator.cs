@@ -1,7 +1,6 @@
-﻿namespace XP.Mvvm
+﻿namespace XP.Mvvm;
+
+public interface IViewLocator
 {
-  public interface IViewLocator
-  {
-    T GetView<T>();
-  }
+  T GetView<T>();
 }

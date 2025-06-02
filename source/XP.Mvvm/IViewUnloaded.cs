@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace XP.Mvvm
+namespace XP.Mvvm;
+
+public interface IViewUnloaded
 {
-  public interface IViewUnloaded
-  {
-    Task UnloadedAsync();
-  }
+  Task UnloadedAsync();
 }

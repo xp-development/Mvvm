@@ -1,9 +1,8 @@
 ﻿using System;
 
-namespace XP.Mvvm
+namespace XP.Mvvm;
+
+public class NavigationItem : MenuItem
 {
-  public class NavigationItem : MenuItem
-  {
-    public Type TargetType { get; set; }
-  }
+  public Type TargetType { get; set; }
 }

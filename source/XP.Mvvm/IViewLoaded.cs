@@ -1,9 +1,8 @@
 ﻿using System.Threading.Tasks;
 
-namespace XP.Mvvm
+namespace XP.Mvvm;
+
+public interface IViewLoaded
 {
-  public interface IViewLoaded
-  {
-    Task LoadedAsync(object parameter = null);
-  }
+  Task LoadedAsync(object parameter = null);
 }

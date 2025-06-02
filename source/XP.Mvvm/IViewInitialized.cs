@@ -1,10 +1,9 @@
 ﻿using System.Threading.Tasks;
 
-namespace XP.Mvvm
+namespace XP.Mvvm;
+
+public interface IViewInitialized
 {
-  public interface IViewInitialized
-  {
-    bool IsInitialized { get; }
-    Task InitializedAsync(object parameter = null);
-  }
+  bool IsInitialized { get; }
+  Task InitializedAsync(object parameter = null);
 }

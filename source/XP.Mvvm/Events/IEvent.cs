@@ -1,6 +1,5 @@
-﻿namespace XP.Mvvm.Events
+﻿namespace XP.Mvvm.Events;
+
+public interface IEvent
 {
-  public interface IEvent
-  {
-  }
 }
