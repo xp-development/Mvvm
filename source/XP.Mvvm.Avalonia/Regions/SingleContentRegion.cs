@@ -1,6 +1,7 @@
 ﻿using System.Threading.Tasks;
 using Avalonia.Controls;
 using log4net;
+using XP.Mvvm.Events;
 using XP.Mvvm.Regions;
 
 namespace XP.Mvvm.Avalonia.Regions
@@ -9,9 +10,11 @@ namespace XP.Mvvm.Avalonia.Regions
   {
     private readonly ContentControl _contentControl;
     private readonly ILog _log = LogManager.GetLogger(typeof(SingleContentRegion));
+    private IEventAggregator _eventAggregator;
 
-    public SingleContentRegion(ContentControl contentControl)
+    public SingleContentRegion(ContentControl contentControl, IEventAggregator eventAggregator)
     {
+      _eventAggregator = eventAggregator;
       _contentControl = contentControl;
     }
 
@@ -24,6 +27,7 @@ namespace XP.Mvvm.Avalonia.Regions
       {
         var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
         await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
+        await _eventAggregator.PublishAsync(new UnloadingEvent(viewUnloadingEventArgs, viewUnloading));
         _log.Debug($"ViewUnloading {frameworkElement.GetType()}");
         if (viewUnloadingEventArgs.Cancel)
         {
@@ -35,12 +39,14 @@ namespace XP.Mvvm.Avalonia.Regions
       if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
       {
         await viewUnloaded.UnloadedAsync();
+        await _eventAggregator.PublishAsync(new UnloadedEvent(viewUnloaded));
         _log.Debug($"ViewUnloaded {frameworkElement.GetType()}");
       }
 
       if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
       {
         await viewDeinitialized.DeinitializedAsync();
+        await _eventAggregator.PublishAsync(new DeinitializedEvent(viewDeinitialized));
         _log.Debug($"ViewDeinitialized {frameworkElement.GetType()}");
       }
 
@@ -49,18 +55,21 @@ namespace XP.Mvvm.Avalonia.Regions
       if (frameworkElement?.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
       {
         await viewInitialized.InitializedAsync(parameter);
+        await _eventAggregator.PublishAsync(new InitializedEvent(parameter, viewInitialized));
         _log.Debug($"ViewInitialized {frameworkElement.GetType()}");
       }
 
       if (frameworkElement?.DataContext is IViewLoading viewLoading)
       {
         await viewLoading.LoadingAsync(parameter);
+        await _eventAggregator.PublishAsync(new LoadingEvent(parameter, viewLoading));
         _log.Debug($"ViewLoading {frameworkElement.GetType()}");
       }
 
       if (frameworkElement?.DataContext is IViewLoaded viewLoaded)
       {
         await viewLoaded.LoadedAsync(parameter);
+        await _eventAggregator.PublishAsync(new LoadedEvent(parameter, viewLoaded));
         _log.Debug($"ViewLoaded {frameworkElement.GetType()}");
       }
     }
