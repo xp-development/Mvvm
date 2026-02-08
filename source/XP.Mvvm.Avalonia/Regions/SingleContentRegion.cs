@@ -52,6 +52,13 @@ namespace XP.Mvvm.Avalonia.Regions
 
       _contentControl.Content = (Control) content;
       frameworkElement = (Control) _contentControl.Content;
+      if (frameworkElement?.DataContext is IViewInitializing { IsInitialized: false } viewInitializing)
+      {
+        await viewInitializing.InitializingAsync(parameter);
+        await _eventAggregator.PublishAsync(new InitializingEvent(parameter, viewInitializing));
+        _log.Debug($"ViewInitializing {frameworkElement.GetType()}");
+      }
+
       if (frameworkElement?.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
       {
         await viewInitialized.InitializedAsync(parameter);

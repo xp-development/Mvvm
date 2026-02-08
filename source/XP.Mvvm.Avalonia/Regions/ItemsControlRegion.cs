@@ -15,6 +15,13 @@ public class ItemsControlRegion(ItemsControl itemsControl, IEventAggregator even
 
     itemsControl.Items.Add(content);
     var frameworkElement = (Control)content;
+    if (frameworkElement.DataContext is IViewInitializing { IsInitialized: false } viewInitializing)
+    {
+      await viewInitializing.InitializingAsync(parameter);
+      await eventAggregator.PublishAsync(new InitializingEvent(parameter, viewInitializing));
+      Log.Debug($"ViewInitializing {frameworkElement.GetType()}");
+    }
+
     if (frameworkElement.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
     {
       await viewInitialized.InitializedAsync(parameter);
