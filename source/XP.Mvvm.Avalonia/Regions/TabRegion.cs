@@ -87,12 +87,12 @@ public class TabRegion : IRegion
                                           .Select(x => x.DataContext)
                                           .Distinct())
     {
-      if (element is not IViewInitializing { IsInitialized: false } viewInitializing)
-        continue;
-  
-      await viewInitializing.InitializingAsync(parameter);
-      await _eventAggregator.PublishAsync(new InitializingEvent(parameter, viewInitializing));
-      Log.Debug($"ViewInitializing {element.GetType()}");
+      if (element is IViewInitializing { IsInitialized: false } viewInitializing)
+      {
+        await viewInitializing.InitializingAsync(parameter);
+        await _eventAggregator.PublishAsync(new InitializingEvent(parameter, viewInitializing));
+        Log.Debug($"ViewInitializing {element.GetType()}");
+      }
 
       if (element is not IViewInitialized { IsInitialized: false } viewInitialized)
         continue;
