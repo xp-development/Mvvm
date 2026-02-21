@@ -87,18 +87,26 @@ public class TabRegion : IRegion
                                           .Select(x => x.DataContext)
                                           .Distinct())
     {
+      var initializeState = element as IViewInitializeState;
+      if (initializeState is { IsInitialized: true })
+        continue;
+
+      await _eventAggregator.PublishAsync(new InitializingEvent(parameter, initializeState));
       if (element is IViewInitializing { IsInitialized: false } viewInitializing)
       {
         await viewInitializing.InitializingAsync(parameter);
-        await _eventAggregator.PublishAsync(new InitializingEvent(parameter, viewInitializing));
         Log.Debug($"ViewInitializing {element.GetType()}");
       }
 
-      if (element is not IViewInitialized { IsInitialized: false } viewInitialized)
-        continue;
-        
-      await viewInitialized.InitializedAsync(parameter);
-      await _eventAggregator.PublishAsync(new InitializedEvent(parameter, viewInitialized));
+      await _eventAggregator.PublishAsync(new InitializedEvent(parameter, element));
+      if(element is IViewInitialized viewInitialized)
+      {
+        await viewInitialized.InitializedAsync(parameter);
+      }
+
+      if (initializeState != null)
+        initializeState.IsInitialized = true;
+
       Log.Debug($"ViewInitialized {element.GetType()}");
     }
 
@@ -106,11 +114,11 @@ public class TabRegion : IRegion
                                           .Select(x => x.DataContext)
                                           .Distinct())
     {
+      await _eventAggregator.PublishAsync(new LoadingEvent(parameter, element));
       if (element is not IViewLoading viewLoading)
         continue;
         
       await viewLoading.LoadingAsync(parameter);
-      await _eventAggregator.PublishAsync(new LoadingEvent(parameter, viewLoading));
       Log.Debug($"ViewLoading {element.GetType()}");
     }
 
@@ -118,11 +126,11 @@ public class TabRegion : IRegion
                                           .Select(x => x.DataContext)
                                           .Distinct())
     {
+      await _eventAggregator.PublishAsync(new LoadedEvent(parameter, element));
       if (element is not IViewLoaded viewLoaded)
         continue;
         
       await viewLoaded.LoadedAsync(parameter);
-      await _eventAggregator.PublishAsync(new LoadedEvent(parameter, viewLoaded));
       Log.Debug($"ViewLoaded {element.GetType()}");
     }
   }
@@ -141,11 +149,11 @@ public class TabRegion : IRegion
     var viewModelsToUnload = GetViewModelsToUnload(controlsToUnload);
     foreach (var frameworkElement in viewModelsToUnload)
     {
+      await _eventAggregator.PublishAsync(new UnloadingEvent(viewUnloadingEventArgs, frameworkElement));
       if (frameworkElement is not IViewUnloading viewUnloading)
         continue;
         
       await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
-      await _eventAggregator.PublishAsync(new UnloadingEvent(viewUnloadingEventArgs, viewUnloading));
       Log.Debug($"Unloading {frameworkElement.GetType()}");
       if (viewUnloadingEventArgs.Cancel)
       {
@@ -156,10 +164,10 @@ public class TabRegion : IRegion
 
     foreach (var frameworkElement in viewModelsToUnload)
     {
+      await _eventAggregator.PublishAsync(new UnloadedEvent(frameworkElement));
       if (frameworkElement is IViewUnloaded viewUnloaded)
       {
         await viewUnloaded.UnloadedAsync();
-        await _eventAggregator.PublishAsync(new UnloadedEvent(viewUnloaded));
         Log.Debug($"Unloaded {tabContent.GetType()}");
       }
     }
@@ -205,11 +213,11 @@ public class TabRegion : IRegion
     var viewModelsToUnload = GetViewModelsToUnload(controlsToDeinitialize);
     foreach (var element in viewModelsToUnload)
     {
+      await _eventAggregator.PublishAsync(new DeinitializedEvent(element));
       if (element is not IViewDeinitialized viewDeinitialized)
         continue;
 
       await viewDeinitialized.DeinitializedAsync();
-      await _eventAggregator.PublishAsync(new DeinitializedEvent(viewDeinitialized));
       Log.Debug($"ViewDeinitialized {element.GetType()}");
     }
 

@@ -10,7 +10,7 @@ namespace XP.Mvvm.Avalonia.Regions
   {
     private readonly ContentControl _contentControl;
     private readonly ILog _log = LogManager.GetLogger(typeof(SingleContentRegion));
-    private IEventAggregator _eventAggregator;
+    private readonly IEventAggregator _eventAggregator;
 
     public SingleContentRegion(ContentControl contentControl, IEventAggregator eventAggregator)
     {
@@ -23,60 +23,68 @@ namespace XP.Mvvm.Avalonia.Regions
       _log.Debug($"Attach {content.GetType()}");
 
       var frameworkElement = _contentControl.Content as Control;
+      var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
+      await _eventAggregator.PublishAsync(new UnloadingEvent(viewUnloadingEventArgs, frameworkElement?.DataContext));
       if (frameworkElement?.DataContext is IViewUnloading viewUnloading)
       {
-        var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
         await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
-        await _eventAggregator.PublishAsync(new UnloadingEvent(viewUnloadingEventArgs, viewUnloading));
         _log.Debug($"ViewUnloading {frameworkElement.GetType()}");
-        if (viewUnloadingEventArgs.Cancel)
-        {
-          _log.Debug($"ViewUnloading {frameworkElement.GetType()} cancelled.");
-          return;
-        }
+      }
+      
+      if (viewUnloadingEventArgs.Cancel)
+      {
+        _log.Debug($"ViewUnloading {frameworkElement.GetType()} cancelled.");
+        return;
       }
 
+      await _eventAggregator.PublishAsync(new UnloadedEvent(frameworkElement?.DataContext));
       if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
       {
         await viewUnloaded.UnloadedAsync();
-        await _eventAggregator.PublishAsync(new UnloadedEvent(viewUnloaded));
         _log.Debug($"ViewUnloaded {frameworkElement.GetType()}");
       }
 
+      await _eventAggregator.PublishAsync(new DeinitializedEvent(frameworkElement?.DataContext));
       if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
       {
         await viewDeinitialized.DeinitializedAsync();
-        await _eventAggregator.PublishAsync(new DeinitializedEvent(viewDeinitialized));
         _log.Debug($"ViewDeinitialized {frameworkElement.GetType()}");
       }
 
       _contentControl.Content = (Control) content;
       frameworkElement = (Control) _contentControl.Content;
+      
+      var initializeState = frameworkElement.DataContext as IViewInitializeState;
+      if(initializeState?.IsInitialized == false)
+        await _eventAggregator.PublishAsync(new InitializingEvent(parameter, initializeState));
+
       if (frameworkElement?.DataContext is IViewInitializing { IsInitialized: false } viewInitializing)
       {
         await viewInitializing.InitializingAsync(parameter);
-        await _eventAggregator.PublishAsync(new InitializingEvent(parameter, viewInitializing));
         _log.Debug($"ViewInitializing {frameworkElement.GetType()}");
       }
 
       if (frameworkElement?.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
       {
         await viewInitialized.InitializedAsync(parameter);
-        await _eventAggregator.PublishAsync(new InitializedEvent(parameter, viewInitialized));
         _log.Debug($"ViewInitialized {frameworkElement.GetType()}");
       }
 
+      await _eventAggregator.PublishAsync(new InitializedEvent(parameter, frameworkElement?.DataContext));
+      if(initializeState != null)
+        initializeState.IsInitialized = true;
+
+      await _eventAggregator.PublishAsync(new LoadingEvent(parameter, frameworkElement?.DataContext));
       if (frameworkElement?.DataContext is IViewLoading viewLoading)
       {
         await viewLoading.LoadingAsync(parameter);
-        await _eventAggregator.PublishAsync(new LoadingEvent(parameter, viewLoading));
         _log.Debug($"ViewLoading {frameworkElement.GetType()}");
       }
 
+      await _eventAggregator.PublishAsync(new LoadedEvent(parameter, frameworkElement?.DataContext));
       if (frameworkElement?.DataContext is IViewLoaded viewLoaded)
       {
         await viewLoaded.LoadedAsync(parameter);
-        await _eventAggregator.PublishAsync(new LoadedEvent(parameter, viewLoaded));
         _log.Debug($"ViewLoaded {frameworkElement.GetType()}");
       }
     }

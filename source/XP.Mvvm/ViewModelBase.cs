@@ -16,7 +16,7 @@ public abstract class ViewModelBase : NotifyPropertyChangedBase, IViewInitializi
     }
   }
 
-  public bool IsInitialized { get; private set; }
+  public bool IsInitialized { get; set; }
   public bool IsLoaded { get; private set; }
 
   public Task InitializingAsync(object parameter = null)

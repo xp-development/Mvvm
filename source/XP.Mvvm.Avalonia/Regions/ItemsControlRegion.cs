@@ -15,31 +15,37 @@ public class ItemsControlRegion(ItemsControl itemsControl, IEventAggregator even
 
     itemsControl.Items.Add(content);
     var frameworkElement = (Control)content;
+    var initializeState = frameworkElement.DataContext as IViewInitializeState;
+    if(initializeState?.IsInitialized == false)
+      await eventAggregator.PublishAsync(new InitializingEvent(parameter, initializeState));
+
     if (frameworkElement.DataContext is IViewInitializing { IsInitialized: false } viewInitializing)
     {
       await viewInitializing.InitializingAsync(parameter);
-      await eventAggregator.PublishAsync(new InitializingEvent(parameter, viewInitializing));
       Log.Debug($"ViewInitializing {frameworkElement.GetType()}");
     }
 
     if (frameworkElement.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
     {
       await viewInitialized.InitializedAsync(parameter);
-      await eventAggregator.PublishAsync(new InitializedEvent(parameter, viewInitialized));
       Log.Debug($"ViewInitialized {frameworkElement.GetType()}");
     }
 
+    await eventAggregator.PublishAsync(new InitializedEvent(parameter, frameworkElement.DataContext));
+    if(initializeState != null)
+      initializeState.IsInitialized = true;
+
+    await eventAggregator.PublishAsync(new LoadingEvent(parameter, frameworkElement.DataContext));
     if (frameworkElement.DataContext is IViewLoading viewLoading)
     {
       await viewLoading.LoadingAsync(parameter);
-      await eventAggregator.PublishAsync(new LoadingEvent(parameter, viewLoading));
       Log.Debug($"ViewLoading {frameworkElement.GetType()}");
     }
 
+    await eventAggregator.PublishAsync(new LoadedEvent(parameter, frameworkElement.DataContext));
     if (frameworkElement.DataContext is IViewLoaded viewLoaded)
     {
       await viewLoaded.LoadedAsync(parameter);
-      await eventAggregator.PublishAsync(new LoadedEvent(parameter, viewLoaded));
       Log.Debug($"ViewLoaded {frameworkElement.GetType()}");
     }
   }
@@ -52,10 +58,10 @@ public class ItemsControlRegion(ItemsControl itemsControl, IEventAggregator even
       return;
 
     var frameworkElement = content as Control;
+    await eventAggregator.PublishAsync(new DeinitializedEvent(frameworkElement?.DataContext));
     if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
     {
       await viewDeinitialized.DeinitializedAsync();
-      await eventAggregator.PublishAsync(new DeinitializedEvent(viewDeinitialized));
       Log.Debug($"ViewDeinitialized {frameworkElement.GetType()}");
     }
 
@@ -80,23 +86,24 @@ public class ItemsControlRegion(ItemsControl itemsControl, IEventAggregator even
       return false;
 
     var frameworkElement = content as Control;
+    var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
+    await eventAggregator.PublishAsync(new UnloadingEvent(viewUnloadingEventArgs, frameworkElement.DataContext));
     if (frameworkElement?.DataContext is IViewUnloading viewUnloading)
     {
-      var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
       await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
-      await eventAggregator.PublishAsync(new UnloadingEvent(viewUnloadingEventArgs, viewUnloading));
       Log.Debug($"Unloading {frameworkElement.GetType()}");
-      if (viewUnloadingEventArgs.Cancel)
-      {
-        Log.Debug($"Unloading {frameworkElement.GetType()} cancelled.");
-        return true;
-      }
+    }
+    
+    if (viewUnloadingEventArgs.Cancel)
+    {
+      Log.Debug($"Unloading {frameworkElement.GetType()} cancelled.");
+      return true;
     }
 
+    await eventAggregator.PublishAsync(new UnloadedEvent(frameworkElement?.DataContext));
     if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
     {
       await viewUnloaded.UnloadedAsync();
-      await eventAggregator.PublishAsync(new UnloadedEvent(viewUnloaded));
       Log.Debug($"Unloaded {frameworkElement.GetType()}");
     }
 

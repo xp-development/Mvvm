@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 namespace XP.Mvvm;
 
 public interface IViewInitializing
+: IViewInitializeState
 {
-  bool IsInitialized { get; }
   Task InitializingAsync(object parameter = null);
 }
