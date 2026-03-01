@@ -53,26 +53,27 @@ namespace XP.Mvvm.Avalonia.Regions
 
       _contentControl.Content = (Control) content;
       frameworkElement = (Control) _contentControl.Content;
-      
+
       var initializeState = frameworkElement.DataContext as IViewInitializeState;
-      if(initializeState?.IsInitialized == false)
+      if (initializeState?.IsInitialized == false)
+      {
         await _eventAggregator.PublishAsync(new InitializingEvent(parameter, initializeState));
+        if (frameworkElement?.DataContext is IViewInitializing { IsInitialized: false } viewInitializing)
+        {
+          await viewInitializing.InitializingAsync(parameter);
+          _log.Debug($"ViewInitializing {frameworkElement.GetType()}");
+        }
 
-      if (frameworkElement?.DataContext is IViewInitializing { IsInitialized: false } viewInitializing)
-      {
-        await viewInitializing.InitializingAsync(parameter);
-        _log.Debug($"ViewInitializing {frameworkElement.GetType()}");
+        if (frameworkElement?.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
+        {
+          await viewInitialized.InitializedAsync(parameter);
+          _log.Debug($"ViewInitialized {frameworkElement.GetType()}");
+        }
+
+        await _eventAggregator.PublishAsync(new InitializedEvent(parameter, frameworkElement?.DataContext));
+        if (initializeState != null)
+          initializeState.IsInitialized = true;
       }
-
-      if (frameworkElement?.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
-      {
-        await viewInitialized.InitializedAsync(parameter);
-        _log.Debug($"ViewInitialized {frameworkElement.GetType()}");
-      }
-
-      await _eventAggregator.PublishAsync(new InitializedEvent(parameter, frameworkElement?.DataContext));
-      if(initializeState != null)
-        initializeState.IsInitialized = true;
 
       await _eventAggregator.PublishAsync(new LoadingEvent(parameter, frameworkElement?.DataContext));
       if (frameworkElement?.DataContext is IViewLoading viewLoading)

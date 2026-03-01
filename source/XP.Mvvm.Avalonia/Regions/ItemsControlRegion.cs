@@ -16,24 +16,24 @@ public class ItemsControlRegion(ItemsControl itemsControl, IEventAggregator even
     itemsControl.Items.Add(content);
     var frameworkElement = (Control)content;
     var initializeState = frameworkElement.DataContext as IViewInitializeState;
-    if(initializeState?.IsInitialized == false)
+    if (initializeState?.IsInitialized == false)
+    {
       await eventAggregator.PublishAsync(new InitializingEvent(parameter, initializeState));
+      if (frameworkElement.DataContext is IViewInitializing { IsInitialized: false } viewInitializing)
+      {
+        await viewInitializing.InitializingAsync(parameter);
+        Log.Debug($"ViewInitializing {frameworkElement.GetType()}");
+      }
 
-    if (frameworkElement.DataContext is IViewInitializing { IsInitialized: false } viewInitializing)
-    {
-      await viewInitializing.InitializingAsync(parameter);
-      Log.Debug($"ViewInitializing {frameworkElement.GetType()}");
-    }
+      if (frameworkElement.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
+      {
+        await viewInitialized.InitializedAsync(parameter);
+        Log.Debug($"ViewInitialized {frameworkElement.GetType()}");
+      }
 
-    if (frameworkElement.DataContext is IViewInitialized { IsInitialized: false } viewInitialized)
-    {
-      await viewInitialized.InitializedAsync(parameter);
-      Log.Debug($"ViewInitialized {frameworkElement.GetType()}");
-    }
-
-    await eventAggregator.PublishAsync(new InitializedEvent(parameter, frameworkElement.DataContext));
-    if(initializeState != null)
+      await eventAggregator.PublishAsync(new InitializedEvent(parameter, frameworkElement.DataContext));
       initializeState.IsInitialized = true;
+    }
 
     await eventAggregator.PublishAsync(new LoadingEvent(parameter, frameworkElement.DataContext));
     if (frameworkElement.DataContext is IViewLoading viewLoading)
