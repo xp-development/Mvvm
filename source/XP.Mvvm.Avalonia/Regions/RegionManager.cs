@@ -45,6 +45,19 @@ namespace XP.Mvvm.Avalonia.Regions
       return element.GetValue(RegionProperty);
     }
 
+    public static readonly StyledProperty<Lifetime> LifetimeProperty = AvaloniaProperty.RegisterAttached<Control, Lifetime>(
+      "Lifetime", typeof(RegionManager));
+    
+    public static void SetLifetime(AvaloniaObject element, Lifetime commandValue)
+    {
+      element.SetValue(LifetimeProperty, commandValue);
+    }
+    
+    public static Lifetime GetLifetime(AvaloniaObject element)
+    {
+      return element.GetValue(LifetimeProperty);
+    }
+
     public IRegion GetRegion(string regionName)
     {
       return _regions[regionName];

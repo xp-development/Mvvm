@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Avalonia;
 using Avalonia.Controls;
 using log4net;
 using XP.Mvvm.Events;
@@ -21,36 +23,46 @@ namespace XP.Mvvm.Avalonia.Regions
     public async Task AttachAsync(object content, object parameter = null)
     {
       _log.Debug($"Attach {content.GetType()}");
-
       var frameworkElement = _contentControl.Content as Control;
-      var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
-      await _eventAggregator.PublishAsync(new UnloadingEvent(viewUnloadingEventArgs, frameworkElement?.DataContext));
-      if (frameworkElement?.DataContext is IViewUnloading viewUnloading)
+      if (RegionManager.GetLifetime(_contentControl) == Lifetime.Parent)
       {
-        await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
-        _log.Debug($"ViewUnloading {frameworkElement.GetType()}");
+        if (content != null)
+        {
+          _contentControl.Tag ??= new HashSet<Control>();
+          ((HashSet<Control>)_contentControl.Tag).Add((Control)content);
+        }
       }
-      
-      if (viewUnloadingEventArgs.Cancel)
+      else
       {
-        _log.Debug($"ViewUnloading {frameworkElement.GetType()} cancelled.");
-        return;
-      }
+        var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
+        await _eventAggregator.PublishAsync(new UnloadingEvent(viewUnloadingEventArgs, frameworkElement?.DataContext));
+        if (frameworkElement?.DataContext is IViewUnloading viewUnloading)
+        {
+          await viewUnloading.UnloadingAsync(viewUnloadingEventArgs);
+          _log.Debug($"ViewUnloading {frameworkElement.GetType()}");
+        }
+        
+        if (viewUnloadingEventArgs.Cancel)
+        {
+          _log.Debug($"ViewUnloading {frameworkElement.GetType()} cancelled.");
+          return;
+        }
 
-      await _eventAggregator.PublishAsync(new UnloadedEvent(frameworkElement?.DataContext));
-      if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
-      {
-        await viewUnloaded.UnloadedAsync();
-        _log.Debug($"ViewUnloaded {frameworkElement.GetType()}");
-      }
+        await _eventAggregator.PublishAsync(new UnloadedEvent(frameworkElement?.DataContext));
+        if (frameworkElement?.DataContext is IViewUnloaded viewUnloaded)
+        {
+          await viewUnloaded.UnloadedAsync();
+          _log.Debug($"ViewUnloaded {frameworkElement.GetType()}");
+        }
 
-      await _eventAggregator.PublishAsync(new DeinitializedEvent(frameworkElement?.DataContext));
-      if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
-      {
-        await viewDeinitialized.DeinitializedAsync();
-        _log.Debug($"ViewDeinitialized {frameworkElement.GetType()}");
-      }
+        await _eventAggregator.PublishAsync(new DeinitializedEvent(frameworkElement?.DataContext));
+        if (frameworkElement?.DataContext is IViewDeinitialized viewDeinitialized)
+        {
+          await viewDeinitialized.DeinitializedAsync();
+          _log.Debug($"ViewDeinitialized {frameworkElement.GetType()}");
+        }
 
+      }
       _contentControl.Content = (Control) content;
       frameworkElement = (Control) _contentControl.Content;
 

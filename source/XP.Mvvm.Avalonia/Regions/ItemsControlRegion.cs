@@ -11,8 +11,13 @@ public class ItemsControlRegion(ItemsControl itemsControl, IEventAggregator even
 {
   public async Task AttachAsync(object content, object parameter = null)
   {
+    if (itemsControl.Items.Contains(content))
+    {
+      Log.Debug($"{content.GetType()} is already attached.");
+      return;
+    }
+    
     Log.Debug($"Attach {content.GetType()}");
-
     itemsControl.Items.Add(content);
     var frameworkElement = (Control)content;
     var initializeState = frameworkElement.DataContext as IViewInitializeState;

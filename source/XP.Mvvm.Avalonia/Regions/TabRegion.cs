@@ -82,7 +82,7 @@ public class TabRegion : IRegion
   private async Task LoadContentAsync(Control frameworkElement, object parameter)
   {
     var controlsToLoad = new List<Control> { frameworkElement };
-    controlsToLoad.AddRange(FindVisualChilds(frameworkElement, x => x.GetValue(RegionManager.RegionProperty) != null));
+    controlsToLoad.AddRange(FindVisualChildren(frameworkElement, x => x.GetValue(RegionManager.RegionProperty) != null));
     foreach (var element in controlsToLoad.Where(x => x != null)
                                           .Select(x => x.DataContext)
                                           .Distinct())
@@ -143,7 +143,7 @@ public class TabRegion : IRegion
     var tabViewItem = content as TabItem;
     var tabContent = tabViewItem?.Content as Control;
     var controlsToUnload = new List<Control> { tabContent };
-    controlsToUnload.AddRange(FindVisualChilds(tabContent, x => x.GetValue(RegionManager.RegionProperty) != null));
+    controlsToUnload.AddRange(FindVisualChildren(tabContent, x => x.GetValue(RegionManager.RegionProperty) != null));
       
     var viewUnloadingEventArgs = new ViewUnloadingEventArgs();
     var viewModelsToUnload = GetViewModelsToUnload(controlsToUnload);
@@ -209,7 +209,7 @@ public class TabRegion : IRegion
     var tabViewItem = content as TabItem;
     var frameworkElement = tabViewItem?.Content as Control;
     var controlsToDeinitialize = new List<Control> { frameworkElement };
-    controlsToDeinitialize.AddRange(FindVisualChilds(frameworkElement, x => x.GetValue(RegionManager.RegionProperty) != null));
+    controlsToDeinitialize.AddRange(FindVisualChildren(frameworkElement, x => x.GetValue(RegionManager.RegionProperty) != null));
     var viewModelsToUnload = GetViewModelsToUnload(controlsToDeinitialize);
     foreach (var element in viewModelsToUnload)
     {
@@ -227,7 +227,7 @@ public class TabRegion : IRegion
 
   public object Current => (_tabControl.SelectedItem as TabItem)?.Content;
 
-  private static IEnumerable<Control> FindVisualChilds(ILogical control, Func<Control, bool> condition)
+  private static IEnumerable<Control> FindVisualChildren(ILogical control, Func<Control, bool> condition)
   {
     if (control == null)
       yield break;
@@ -246,11 +246,21 @@ public class TabRegion : IRegion
           foreach (var item in itemsControl.GetLogicalChildren())
             yield return (Control)item;
         }
-        else if(visualChild is ContentControl)
-          yield return visualChild;
+        else if (visualChild is ContentControl)
+        {
+          if (RegionManager.GetLifetime(visualChild) == Lifetime.Parent)
+          {
+            foreach (var control1 in (HashSet<Control>)visualChild.Tag ?? [])
+            {
+              yield return control1;
+            }
+          }
+          else
+            yield return visualChild;
+        }
       }
         
-      foreach (var childOfChild in FindVisualChilds(child, condition))
+      foreach (var childOfChild in FindVisualChildren(child, condition))
         yield return childOfChild;
     }
   }
